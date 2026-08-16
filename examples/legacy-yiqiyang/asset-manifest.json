@@ -1,0 +1,107 @@
+{
+  "schema_version": "1.0",
+  "project_id": "PROJECT-001",
+  "manifest_version": 1,
+  "assets": [
+    {
+      "asset_id": "CHAR-001",
+      "type": "character",
+      "name": "杨可欣",
+      "aliases": ["可欣"],
+      "lock_status": "partial",
+      "locked_fields": ["identity", "black-round-glasses"],
+      "evidence": [{"field": "identity", "level": "confirmed", "source_ref": "ART-005", "locator": "场1-52"}, {"field": "black-round-glasses", "level": "confirmed", "source_ref": "ART-005", "locator": "场1等"}],
+      "visual_dna": {"anchors": ["25岁行政文员", "黑色圆框眼镜", "自然生活感"], "prohibited_drift": ["网红脸", "奢华造型"]}
+    },
+    {
+      "asset_id": "CHAR-002",
+      "type": "character",
+      "name": "萧尧",
+      "aliases": [],
+      "lock_status": "partial",
+      "locked_fields": ["identity", "occupation"],
+      "evidence": [{"field": "identity", "level": "confirmed", "source_ref": "ART-005", "locator": "场1-50"}, {"field": "occupation", "level": "confirmed", "source_ref": "ART-005", "locator": "场1-24"}],
+      "visual_dna": {"anchors": ["30岁技术工程师", "深色工作装", "行动表达关心"], "prohibited_drift": ["霸总化"]}
+    },
+    {
+      "asset_id": "CHAR-003",
+      "type": "character",
+      "name": "小黑",
+      "aliases": ["黑猫"],
+      "lock_status": "locked",
+      "locked_fields": ["species", "coat", "body-type"],
+      "evidence": [{"field": "species", "level": "confirmed", "source_ref": "ART-005", "locator": "场28-50"}, {"field": "coat", "level": "confirmed", "source_ref": "ART-005", "locator": "场28-50"}, {"field": "body-type", "level": "confirmed", "source_ref": "ART-005", "locator": "场28-50"}],
+      "visual_dna": {"anchors": ["真实黑色短毛家猫", "普通体型"]}
+    },
+    {
+      "asset_id": "SCENE-010",
+      "type": "scene",
+      "name": "杨可欣出租屋",
+      "aliases": ["出租屋"],
+      "lock_status": "partial",
+      "locked_fields": ["scale", "worn-ceiling"],
+      "evidence": [{"field": "scale", "level": "confirmed", "source_ref": "ART-005", "locator": "场26、34、47、51-52"}, {"field": "worn-ceiling", "level": "confirmed", "source_ref": "ART-005", "locator": "场26、34、47、51-52"}],
+      "visual_dna": {"anchors": ["小、旧、真实", "一处起皮天花板"]}
+    },
+    {
+      "asset_id": "SCENE-013",
+      "type": "scene",
+      "name": "指南针咖啡馆",
+      "aliases": ["咖啡馆"],
+      "lock_status": "partial",
+      "locked_fields": ["window-seat", "brass-compass"],
+      "evidence": [{"field": "window-seat", "level": "confirmed", "source_ref": "ART-005", "locator": "场35-43、48-50"}, {"field": "brass-compass", "level": "confirmed", "source_ref": "ART-005", "locator": "场35-43、48-50"}],
+      "visual_dna": {"anchors": ["靠窗座位", "黄铜指南针装饰", "午后光"]}
+    },
+    {
+      "asset_id": "PROP-001",
+      "type": "prop",
+      "name": "黑色圆框眼镜",
+      "aliases": ["眼镜"],
+      "lock_status": "locked",
+      "locked_fields": ["shape", "color", "owner"],
+      "evidence": [{"field": "shape", "level": "confirmed", "source_ref": "ART-005", "locator": "场1等"}, {"field": "color", "level": "confirmed", "source_ref": "ART-005", "locator": "场1等"}, {"field": "owner", "level": "confirmed", "source_ref": "ART-005", "locator": "场1-52"}],
+      "visual_dna": {"anchors": ["黑色圆框", "杨可欣所有"]}
+    },
+    {
+      "asset_id": "PROP-013",
+      "type": "prop",
+      "name": "创可贴",
+      "aliases": [],
+      "lock_status": "locked",
+      "locked_fields": ["plain-white", "retained"],
+      "evidence": [{"field": "plain-white", "level": "confirmed", "source_ref": "ART-005", "locator": "场22"}, {"field": "retained", "level": "confirmed", "source_ref": "ART-005", "locator": "场25、26、51"}],
+      "visual_dna": {"anchors": ["普通白色创可贴", "包装被保留"]}
+    },
+    {
+      "asset_id": "PROP-020",
+      "type": "prop",
+      "name": "猫包",
+      "aliases": [],
+      "lock_status": "locked",
+      "locked_fields": ["soft-body", "scratch-marks"],
+      "evidence": [{"field": "soft-body", "level": "confirmed", "source_ref": "ART-005", "locator": "场45-50"}, {"field": "scratch-marks", "level": "confirmed", "source_ref": "ART-005", "locator": "场45-50"}],
+      "visual_dna": {"anchors": ["普通软质猫包", "边缘抓痕"]}
+    },
+    {
+      "asset_id": "MOTIF-010",
+      "type": "motif",
+      "name": "一起养",
+      "aliases": [],
+      "lock_status": "locked",
+      "locked_fields": ["payoff"],
+      "evidence": [{"field": "payoff", "level": "confirmed", "source_ref": "ART-005", "locator": "场45-52"}],
+      "visual_dna": {"anchors": ["小黑", "猫包", "咖啡杯", "旧笔记本"]}
+    },
+    {
+      "asset_id": "BG-001",
+      "type": "background-group",
+      "name": "非连续群众组",
+      "aliases": ["工人", "保安", "客人", "路人"],
+      "lock_status": "unlocked",
+      "locked_fields": [],
+      "evidence": [{"field": "identity", "level": "unknown", "source_ref": "ART-005", "locator": "多场"}],
+      "visual_dna": {"prohibited_drift": ["把不同群众生成为同一个稳定角色"]}
+    }
+  ]
+}

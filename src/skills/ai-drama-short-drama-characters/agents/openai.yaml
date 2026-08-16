@@ -1,0 +1,6 @@
+interface:
+  display_name: "AI 短剧角色内核"
+  short_description: "校验原文逐字段证据并导入角色画像、视觉与音色候选资产"
+  default_prompt: "Use $ai-drama-short-drama-characters to validate and import a short-drama cast."
+policy:
+  allow_implicit_invocation: false

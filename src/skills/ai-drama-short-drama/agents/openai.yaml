@@ -1,0 +1,6 @@
+interface:
+  display_name: "AI 短剧执行引擎"
+  short_description: "以 profile、状态和审计编排小说改短剧完整投产流程"
+  default_prompt: "Use $ai-drama-short-drama to run the complete governed series workflow with explicit promptLang and profile policies."
+policy:
+  allow_implicit_invocation: true

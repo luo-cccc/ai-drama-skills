@@ -1,0 +1,6 @@
+interface:
+  display_name: "AI 分镜设计"
+  short_description: "按 profile 画幅和精确时长生成分镜、时间轴与视频提示词"
+  default_prompt: "使用 $ai-drama-storyboard 按 delivery profile 画幅和精确闭合时间轴生成分镜，并分离 generation group 与剪辑容器。"
+policy:
+  allow_implicit_invocation: true

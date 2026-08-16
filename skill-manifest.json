@@ -1,0 +1,638 @@
+{
+  "schema_version": "1.0",
+  "skills": [
+    {
+      "name": "ai-drama-forging",
+      "shared_references": [
+        "workflow-contract.md",
+        "data-contract.md",
+        "evidence-audit.md",
+        "delivery-contract.md",
+        "originality-safety.md"
+      ],
+      "scripts": [
+        "state_cli.py",
+        "timeline_cli.py",
+        "validate_project.py",
+        "schema_validator.py",
+        "route_cli.py",
+        "project_store.py"
+      ],
+      "schemas": [
+        "project-state.schema.json",
+        "asset-manifest.schema.json",
+        "continuity-ledger.schema.json",
+        "shot-plan.schema.json",
+        "shot-analysis.schema.json",
+        "short-drama-engine.schema.json",
+        "audit-report.schema.json",
+        "prompt-context.schema.json",
+        "visual-delivery.schema.json",
+        "generation-manifest.schema.json",
+        "delivery-manifest.schema.json"
+      ]
+    },
+    {
+      "name": "ai-drama-development",
+      "shared_references": [
+        "workflow-contract.md",
+        "originality-safety.md",
+        "performance-camera.md"
+      ],
+      "scripts": [
+        "state_cli.py",
+        "project_store.py"
+      ],
+      "schemas": [
+        "project-state.schema.json"
+      ]
+    },
+    {
+      "name": "ai-drama-screenplay",
+      "shared_references": [
+        "workflow-contract.md",
+        "screenplay-format.md",
+        "performance-camera.md",
+        "originality-safety.md"
+      ],
+      "scripts": [
+        "state_cli.py",
+        "project_store.py"
+      ],
+      "schemas": [
+        "project-state.schema.json"
+      ]
+    },
+    {
+      "name": "ai-drama-script-audit",
+      "shared_references": [
+        "workflow-contract.md",
+        "screenplay-format.md",
+        "evidence-audit.md"
+      ],
+      "scripts": [
+        "state_cli.py",
+        "timeline_cli.py",
+        "validate_project.py",
+        "schema_validator.py",
+        "project_store.py"
+      ],
+      "schemas": [
+        "project-state.schema.json",
+        "asset-manifest.schema.json",
+        "continuity-ledger.schema.json",
+        "shot-plan.schema.json",
+        "shot-analysis.schema.json",
+        "short-drama-engine.schema.json",
+        "audit-report.schema.json",
+        "prompt-context.schema.json",
+        "visual-delivery.schema.json",
+        "generation-manifest.schema.json",
+        "delivery-manifest.schema.json"
+      ]
+    },
+    {
+      "name": "ai-drama-assets",
+      "shared_references": [
+        "data-contract.md",
+        "asset-contract.md",
+        "visual-evidence.md",
+        "delivery-contract.md"
+      ],
+      "scripts": [
+        "state_cli.py",
+        "timeline_cli.py",
+        "validate_project.py",
+        "schema_validator.py",
+        "project_store.py"
+      ],
+      "schemas": [
+        "project-state.schema.json",
+        "asset-manifest.schema.json",
+        "continuity-ledger.schema.json",
+        "shot-plan.schema.json",
+        "shot-analysis.schema.json",
+        "short-drama-engine.schema.json",
+        "audit-report.schema.json",
+        "prompt-context.schema.json",
+        "visual-delivery.schema.json",
+        "generation-manifest.schema.json",
+        "delivery-manifest.schema.json"
+      ]
+    },
+    {
+      "name": "ai-drama-character-design",
+      "shared_references": [
+        "asset-contract.md",
+        "visual-evidence.md",
+        "visual-layout-contract.md",
+        "performance-camera.md",
+        "delivery-contract.md"
+      ],
+      "scripts": [
+        "state_cli.py",
+        "timeline_cli.py",
+        "validate_project.py",
+        "schema_validator.py",
+        "visual_layout_cli.py",
+        "project_store.py"
+      ],
+      "schemas": [
+        "project-state.schema.json",
+        "asset-manifest.schema.json",
+        "continuity-ledger.schema.json",
+        "shot-plan.schema.json",
+        "shot-analysis.schema.json",
+        "short-drama-engine.schema.json",
+        "audit-report.schema.json",
+        "prompt-context.schema.json",
+        "visual-delivery.schema.json",
+        "generation-manifest.schema.json",
+        "delivery-manifest.schema.json"
+      ]
+    },
+    {
+      "name": "ai-drama-scene-design",
+      "shared_references": [
+        "asset-contract.md",
+        "visual-evidence.md",
+        "visual-layout-contract.md",
+        "performance-camera.md",
+        "delivery-contract.md"
+      ],
+      "scripts": [
+        "state_cli.py",
+        "timeline_cli.py",
+        "validate_project.py",
+        "schema_validator.py",
+        "visual_layout_cli.py",
+        "project_store.py"
+      ],
+      "schemas": [
+        "project-state.schema.json",
+        "asset-manifest.schema.json",
+        "continuity-ledger.schema.json",
+        "shot-plan.schema.json",
+        "shot-analysis.schema.json",
+        "short-drama-engine.schema.json",
+        "audit-report.schema.json",
+        "prompt-context.schema.json",
+        "visual-delivery.schema.json",
+        "generation-manifest.schema.json",
+        "delivery-manifest.schema.json"
+      ]
+    },
+    {
+      "name": "ai-drama-storyboard",
+      "shared_references": [
+        "workflow-contract.md",
+        "data-contract.md",
+        "asset-contract.md",
+        "performance-camera.md",
+        "timeline-contract.md",
+        "visual-evidence.md",
+        "visual-layout-contract.md",
+        "delivery-contract.md"
+      ],
+      "scripts": [
+        "state_cli.py",
+        "timeline_cli.py",
+        "validate_project.py",
+        "schema_validator.py",
+        "visual_layout_cli.py",
+        "project_store.py"
+      ],
+      "schemas": [
+        "project-state.schema.json",
+        "asset-manifest.schema.json",
+        "continuity-ledger.schema.json",
+        "shot-plan.schema.json",
+        "shot-analysis.schema.json",
+        "short-drama-engine.schema.json",
+        "audit-report.schema.json",
+        "prompt-context.schema.json",
+        "visual-delivery.schema.json",
+        "generation-manifest.schema.json",
+        "delivery-manifest.schema.json"
+      ]
+    },
+    {
+      "name": "ai-drama-shot-analysis",
+      "shared_references": [
+        "workflow-contract.md",
+        "data-contract.md",
+        "asset-contract.md",
+        "visual-evidence.md",
+        "evidence-audit.md",
+        "performance-camera.md",
+        "timeline-contract.md",
+        "delivery-contract.md"
+      ],
+      "scripts": [
+        "state_cli.py",
+        "media_analysis_cli.py",
+        "project_store.py"
+      ],
+      "schemas": [
+        "project-state.schema.json",
+        "asset-manifest.schema.json",
+        "continuity-ledger.schema.json",
+        "shot-analysis.schema.json"
+      ]
+    },
+    {
+      "name": "ai-drama-short-drama",
+      "shared_references": [
+        "workflow-contract.md",
+        "data-contract.md",
+        "asset-contract.md",
+        "evidence-audit.md",
+        "timeline-contract.md",
+        "visual-evidence.md",
+        "short-drama-prompt-governance.md",
+        "delivery-contract.md"
+      ],
+      "scripts": [
+        "short_drama_cli.py",
+        "state_cli.py",
+        "timeline_cli.py",
+        "validate_project.py",
+        "schema_validator.py",
+        "project_store.py"
+      ],
+      "schemas": [
+        "project-state.schema.json",
+        "asset-manifest.schema.json",
+        "continuity-ledger.schema.json",
+        "shot-plan.schema.json",
+        "short-drama-engine.schema.json",
+        "shot-analysis.schema.json",
+        "audit-report.schema.json",
+        "prompt-context.schema.json",
+        "visual-delivery.schema.json",
+        "generation-manifest.schema.json",
+        "delivery-manifest.schema.json"
+      ],
+      "vendor_files": [
+        {
+          "source": "engine/shuohao-runtime",
+          "target": "engine/shuohao-runtime"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-characters/SKILL.md",
+          "target": "references/shuohao/novel-characters/workflow.md"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-characters/references",
+          "target": "references/shuohao/novel-characters"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-outline/SKILL.md",
+          "target": "references/shuohao/novel-outline/workflow.md"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-outline/references",
+          "target": "references/shuohao/novel-outline"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-art/SKILL.md",
+          "target": "references/shuohao/novel-art/workflow.md"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-art/references",
+          "target": "references/shuohao/novel-art"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-script/SKILL.md",
+          "target": "references/shuohao/novel-script/workflow.md"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-script/references",
+          "target": "references/shuohao/novel-script"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-storyboard/SKILL.md",
+          "target": "references/shuohao/novel-storyboard/workflow.md"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-storyboard/references",
+          "target": "references/shuohao/novel-storyboard"
+        },
+        {
+          "source": "vendor/shuohao/snapshot-manifest.json",
+          "target": "vendor/shuohao/snapshot-manifest.json"
+        },
+        {
+          "source": "vendor/shuohao/upstream/LICENSE",
+          "target": "THIRD_PARTY_LICENSES/shuohao-LICENSE"
+        },
+        {
+          "source": "vendor/shuohao/upstream/NOTICE",
+          "target": "THIRD_PARTY_NOTICES/shuohao-NOTICE"
+        },
+        {
+          "source": "engine/shuohao-adapted/MODIFICATIONS.md",
+          "target": "THIRD_PARTY_NOTICES/shuohao-MODIFICATIONS.md"
+        }
+      ]
+    },
+    {
+      "name": "ai-drama-short-drama-characters",
+      "shared_references": [
+        "asset-contract.md",
+        "visual-evidence.md",
+        "short-drama-prompt-governance.md",
+        "delivery-contract.md"
+      ],
+      "scripts": [
+        "short_drama_cli.py",
+        "timeline_cli.py",
+        "validate_project.py",
+        "schema_validator.py",
+        "project_store.py"
+      ],
+      "schemas": [
+        "project-state.schema.json",
+        "asset-manifest.schema.json",
+        "continuity-ledger.schema.json",
+        "shot-plan.schema.json",
+        "short-drama-engine.schema.json",
+        "shot-analysis.schema.json",
+        "audit-report.schema.json",
+        "prompt-context.schema.json",
+        "visual-delivery.schema.json",
+        "generation-manifest.schema.json",
+        "delivery-manifest.schema.json"
+      ],
+      "vendor_files": [
+        {
+          "source": "engine/shuohao-runtime",
+          "target": "engine/shuohao-runtime"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-characters/SKILL.md",
+          "target": "references/shuohao/workflow.md"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-characters/references",
+          "target": "references/shuohao"
+        },
+        {
+          "source": "vendor/shuohao/snapshot-manifest.json",
+          "target": "vendor/shuohao/snapshot-manifest.json"
+        },
+        {
+          "source": "vendor/shuohao/upstream/LICENSE",
+          "target": "THIRD_PARTY_LICENSES/shuohao-LICENSE"
+        },
+        {
+          "source": "vendor/shuohao/upstream/NOTICE",
+          "target": "THIRD_PARTY_NOTICES/shuohao-NOTICE"
+        },
+        {
+          "source": "engine/shuohao-adapted/MODIFICATIONS.md",
+          "target": "THIRD_PARTY_NOTICES/shuohao-MODIFICATIONS.md"
+        }
+      ]
+    },
+    {
+      "name": "ai-drama-short-drama-outline",
+      "shared_references": [
+        "workflow-contract.md",
+        "data-contract.md",
+        "short-drama-prompt-governance.md",
+        "delivery-contract.md"
+      ],
+      "scripts": [
+        "short_drama_cli.py",
+        "timeline_cli.py",
+        "validate_project.py",
+        "schema_validator.py",
+        "project_store.py"
+      ],
+      "schemas": [
+        "project-state.schema.json",
+        "asset-manifest.schema.json",
+        "continuity-ledger.schema.json",
+        "shot-plan.schema.json",
+        "short-drama-engine.schema.json",
+        "shot-analysis.schema.json",
+        "audit-report.schema.json",
+        "prompt-context.schema.json",
+        "visual-delivery.schema.json",
+        "generation-manifest.schema.json",
+        "delivery-manifest.schema.json"
+      ],
+      "vendor_files": [
+        {
+          "source": "engine/shuohao-runtime",
+          "target": "engine/shuohao-runtime"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-outline/SKILL.md",
+          "target": "references/shuohao/workflow.md"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-outline/references",
+          "target": "references/shuohao"
+        },
+        {
+          "source": "vendor/shuohao/snapshot-manifest.json",
+          "target": "vendor/shuohao/snapshot-manifest.json"
+        },
+        {
+          "source": "vendor/shuohao/upstream/LICENSE",
+          "target": "THIRD_PARTY_LICENSES/shuohao-LICENSE"
+        },
+        {
+          "source": "vendor/shuohao/upstream/NOTICE",
+          "target": "THIRD_PARTY_NOTICES/shuohao-NOTICE"
+        },
+        {
+          "source": "engine/shuohao-adapted/MODIFICATIONS.md",
+          "target": "THIRD_PARTY_NOTICES/shuohao-MODIFICATIONS.md"
+        }
+      ]
+    },
+    {
+      "name": "ai-drama-short-drama-art",
+      "shared_references": [
+        "asset-contract.md",
+        "visual-evidence.md",
+        "short-drama-prompt-governance.md",
+        "delivery-contract.md"
+      ],
+      "scripts": [
+        "short_drama_cli.py",
+        "timeline_cli.py",
+        "validate_project.py",
+        "schema_validator.py",
+        "project_store.py"
+      ],
+      "schemas": [
+        "project-state.schema.json",
+        "asset-manifest.schema.json",
+        "continuity-ledger.schema.json",
+        "shot-plan.schema.json",
+        "short-drama-engine.schema.json",
+        "shot-analysis.schema.json",
+        "audit-report.schema.json",
+        "prompt-context.schema.json",
+        "visual-delivery.schema.json",
+        "generation-manifest.schema.json",
+        "delivery-manifest.schema.json"
+      ],
+      "vendor_files": [
+        {
+          "source": "engine/shuohao-runtime",
+          "target": "engine/shuohao-runtime"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-art/SKILL.md",
+          "target": "references/shuohao/workflow.md"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-art/references",
+          "target": "references/shuohao"
+        },
+        {
+          "source": "vendor/shuohao/snapshot-manifest.json",
+          "target": "vendor/shuohao/snapshot-manifest.json"
+        },
+        {
+          "source": "vendor/shuohao/upstream/LICENSE",
+          "target": "THIRD_PARTY_LICENSES/shuohao-LICENSE"
+        },
+        {
+          "source": "vendor/shuohao/upstream/NOTICE",
+          "target": "THIRD_PARTY_NOTICES/shuohao-NOTICE"
+        },
+        {
+          "source": "engine/shuohao-adapted/MODIFICATIONS.md",
+          "target": "THIRD_PARTY_NOTICES/shuohao-MODIFICATIONS.md"
+        }
+      ]
+    },
+    {
+      "name": "ai-drama-short-drama-script",
+      "shared_references": [
+        "workflow-contract.md",
+        "screenplay-format.md",
+        "evidence-audit.md",
+        "short-drama-prompt-governance.md",
+        "delivery-contract.md"
+      ],
+      "scripts": [
+        "short_drama_cli.py",
+        "timeline_cli.py",
+        "validate_project.py",
+        "schema_validator.py",
+        "project_store.py"
+      ],
+      "schemas": [
+        "project-state.schema.json",
+        "asset-manifest.schema.json",
+        "continuity-ledger.schema.json",
+        "shot-plan.schema.json",
+        "short-drama-engine.schema.json",
+        "shot-analysis.schema.json",
+        "audit-report.schema.json",
+        "prompt-context.schema.json",
+        "visual-delivery.schema.json",
+        "generation-manifest.schema.json",
+        "delivery-manifest.schema.json"
+      ],
+      "vendor_files": [
+        {
+          "source": "engine/shuohao-runtime",
+          "target": "engine/shuohao-runtime"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-script/SKILL.md",
+          "target": "references/shuohao/workflow.md"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-script/references",
+          "target": "references/shuohao"
+        },
+        {
+          "source": "vendor/shuohao/snapshot-manifest.json",
+          "target": "vendor/shuohao/snapshot-manifest.json"
+        },
+        {
+          "source": "vendor/shuohao/upstream/LICENSE",
+          "target": "THIRD_PARTY_LICENSES/shuohao-LICENSE"
+        },
+        {
+          "source": "vendor/shuohao/upstream/NOTICE",
+          "target": "THIRD_PARTY_NOTICES/shuohao-NOTICE"
+        },
+        {
+          "source": "engine/shuohao-adapted/MODIFICATIONS.md",
+          "target": "THIRD_PARTY_NOTICES/shuohao-MODIFICATIONS.md"
+        }
+      ]
+    },
+    {
+      "name": "ai-drama-short-drama-storyboard",
+      "shared_references": [
+        "workflow-contract.md",
+        "data-contract.md",
+        "asset-contract.md",
+        "timeline-contract.md",
+        "short-drama-prompt-governance.md",
+        "delivery-contract.md"
+      ],
+      "scripts": [
+        "short_drama_cli.py",
+        "timeline_cli.py",
+        "validate_project.py",
+        "schema_validator.py",
+        "project_store.py"
+      ],
+      "schemas": [
+        "project-state.schema.json",
+        "asset-manifest.schema.json",
+        "continuity-ledger.schema.json",
+        "shot-plan.schema.json",
+        "short-drama-engine.schema.json",
+        "shot-analysis.schema.json",
+        "audit-report.schema.json",
+        "prompt-context.schema.json",
+        "visual-delivery.schema.json",
+        "generation-manifest.schema.json",
+        "delivery-manifest.schema.json"
+      ],
+      "vendor_files": [
+        {
+          "source": "engine/shuohao-runtime",
+          "target": "engine/shuohao-runtime"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-storyboard/SKILL.md",
+          "target": "references/shuohao/workflow.md"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-storyboard/references",
+          "target": "references/shuohao"
+        },
+        {
+          "source": "vendor/shuohao/snapshot-manifest.json",
+          "target": "vendor/shuohao/snapshot-manifest.json"
+        },
+        {
+          "source": "vendor/shuohao/upstream/LICENSE",
+          "target": "THIRD_PARTY_LICENSES/shuohao-LICENSE"
+        },
+        {
+          "source": "vendor/shuohao/upstream/NOTICE",
+          "target": "THIRD_PARTY_NOTICES/shuohao-NOTICE"
+        },
+        {
+          "source": "engine/shuohao-adapted/MODIFICATIONS.md",
+          "target": "THIRD_PARTY_NOTICES/shuohao-MODIFICATIONS.md"
+        }
+      ]
+    }
+  ]
+}

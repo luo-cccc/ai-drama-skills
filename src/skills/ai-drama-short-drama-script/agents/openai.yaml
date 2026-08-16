@@ -1,0 +1,6 @@
+interface:
+  display_name: "AI 短剧剧本内核"
+  short_description: "按三集批次估时并导入六键 canonical audit 的短剧剧本"
+  default_prompt: "Use $ai-drama-short-drama-script for a <=3 episode batch; keep ±15% only as screenplay estimation and import a six-key canonical audit_result."
+policy:
+  allow_implicit_invocation: false

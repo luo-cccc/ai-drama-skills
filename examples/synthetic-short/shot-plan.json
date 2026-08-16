@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "project_id": "PROJECT-001",
+  "plan_version": 1,
+  "target_runtime_ms": 360000,
+  "timeline_start_ms": 0,
+  "timeline_end_ms": 15000,
+  "profile": {"clip_max_duration_ms": 30000, "audio_policy": "preserve-dialogue-environment", "subtitle_policy": "unspecified", "aspect_ratio": "16:9", "generator": "unspecified", "editing_policy": "continuity-led", "visual_reset_policy": "story-driven", "dialogue_rate_chars_per_second": 4.5},
+  "scenes": [{"scene_id": "SCN-005", "name": "学校礼堂外侧与门内舞台"}],
+  "beats": [
+    {"beat_id": "BEAT-001", "summary": "李青到达并发现朗诵已经开始", "indivisible": true},
+    {"beat_id": "BEAT-002", "summary": "李青举伞，女儿看见", "indivisible": true},
+    {"beat_id": "BEAT-003", "summary": "女儿完成朗诵，母女相视", "indivisible": true}
+  ],
+  "shots": [
+    {"shot_id": "SHOT-001", "scene_id": "SCN-005", "beat_id": "BEAT-001", "start_ms": 0, "end_ms": 5000, "framing": "中远景", "angle": "礼堂内侧望向玻璃门", "movement": "固定", "transition": "直入", "visual": "李青抵达礼堂外侧的玻璃门前，隔门看见舞台上的女儿", "performance": "李青停在推门动作之前，呼吸尚未平复", "dialogue": "", "sound": "朗诵声与门外雨声", "assets": ["CHAR-001", "CHAR-004", "PROP-001", "SCENE-002"]},
+    {"shot_id": "SHOT-002", "scene_id": "SCN-005", "beat_id": "BEAT-002", "start_ms": 5000, "end_ms": 10000, "framing": "近景", "angle": "玻璃两侧关系构图", "movement": "轻微推近", "transition": "视线接续", "visual": "李青没有推门，只抬起黄色旧伞；门内舞台上的女儿视线落到伞上", "performance": "女儿停顿半秒后重新聚焦", "dialogue": "", "sound": "朗诵短暂停顿后继续", "assets": ["CHAR-001", "CHAR-004", "PROP-001", "SCENE-002"]},
+    {"shot_id": "SHOT-003", "scene_id": "SCN-005", "beat_id": "BEAT-003", "start_ms": 10000, "end_ms": 15000, "framing": "双人关系远景", "angle": "侧向包含玻璃反射", "movement": "固定", "transition": "动作落幅", "visual": "安全出口灯映在李青湿肩，母女分处礼堂外侧与门内舞台，隔着玻璃相视一笑", "performance": "李青肩膀随长呼气缓慢落下", "dialogue": "", "sound": "朗诵最后一句与礼堂混响", "assets": ["CHAR-001", "CHAR-004", "PROP-001", "SCENE-002"]}
+  ]
+}

@@ -1,0 +1,232 @@
+{
+  "schema_version": "1.0",
+  "project": {
+    "project_id": "PROJECT-001",
+    "title": "一起养",
+    "slug": "yiqiyang",
+    "locale": "zh-CN",
+    "format": null,
+    "target_runtime_ms": null,
+    "scene_ids": ["SCN-001", "SCN-002", "SCN-003", "SCN-004", "SCN-005", "SCN-006", "SCN-007", "SCN-008", "SCN-009", "SCN-010", "SCN-011", "SCN-012", "SCN-013", "SCN-014", "SCN-015", "SCN-016", "SCN-017", "SCN-018", "SCN-019", "SCN-020", "SCN-021", "SCN-022", "SCN-023", "SCN-024", "SCN-025", "SCN-026", "SCN-027", "SCN-028", "SCN-029", "SCN-030", "SCN-031", "SCN-032", "SCN-033", "SCN-034", "SCN-035", "SCN-036", "SCN-037", "SCN-038", "SCN-039", "SCN-040", "SCN-041", "SCN-042", "SCN-043", "SCN-044", "SCN-045", "SCN-046", "SCN-047", "SCN-048", "SCN-049", "SCN-050", "SCN-051", "SCN-052"]
+  },
+  "stage": "complete",
+  "configuration": {
+    "checkpoint_policy": "key-nodes",
+    "automatic_authorization": false,
+    "clip_max_duration_ms": 30000,
+    "audio_policy": "preserve-dialogue-environment",
+    "subtitle_policy": "unspecified",
+    "aspect_ratio": "2.39:1",
+    "generator": "unspecified",
+    "editing_policy": "continuity-led",
+    "visual_reset_policy": "story-driven",
+    "dialogue_rate_chars_per_second": 4.5
+  },
+  "sources": [
+    {
+      "source_id": "SRC-001",
+      "kind": "long-conversation",
+      "path": null,
+      "availability": "not-distributed",
+      "authority": "canonical",
+      "sha256": null
+    }
+  ],
+  "artifacts": [
+    {
+      "artifact_id": "ART-001",
+      "type": "production-brief",
+      "revision": 1,
+      "status": "confirmed",
+      "path": "production-brief-v001.md",
+      "depends_on": [],
+      "source_refs": [
+        "SRC-001"
+      ],
+      "scope": null,
+      "sha256": "accb48ba0a0a334a07c156ef5ac181665a995053795c3c74e20d414c578f5eb7"
+    },
+    {
+      "artifact_id": "ART-002",
+      "type": "scene-outline",
+      "revision": 1,
+      "status": "confirmed",
+      "path": "scene-outline-v001.md",
+      "depends_on": [
+        "ART-001"
+      ],
+      "source_refs": [
+        "SRC-001"
+      ],
+      "scope": null,
+      "sha256": "e396e5480538406f80943441fcd27ddced62955a536b71f2372b9218e01f1a2e"
+    },
+    {
+      "artifact_id": "ART-003",
+      "type": "screenplay",
+      "revision": 1,
+      "status": "superseded",
+      "path": "screenplay-v001.md",
+      "depends_on": [
+        "ART-001",
+        "ART-002"
+      ],
+      "source_refs": [
+        "SRC-001"
+      ],
+      "scope": null,
+      "sha256": "11824c1fd850d370dce1b07e0a60f2097e25cc6cfc2b35512a6bc4c6155350ed"
+    },
+    {
+      "artifact_id": "ART-004",
+      "type": "audit",
+      "revision": 1,
+      "status": "superseded",
+      "path": "audit-screenplay-v001.md",
+      "depends_on": [
+        "ART-003"
+      ],
+      "source_refs": [
+        "SRC-001"
+      ],
+      "scope": null,
+      "sha256": "6c69873b444c22a0b9b981d6da0ea404617d949387b3ab2b076293b031d93525",
+      "audit_result": {
+        "p0_count": 0,
+        "p1_count": 2,
+        "p2_count": 8,
+        "required_elements_total": 18,
+        "required_elements_passed": 17,
+        "decision": "revise"
+      }
+    },
+    {
+      "artifact_id": "ART-005",
+      "type": "screenplay",
+      "revision": 2,
+      "status": "confirmed",
+      "path": "screenplay-v002.md",
+      "depends_on": [
+        "ART-001",
+        "ART-002",
+        "ART-004"
+      ],
+      "source_refs": [
+        "SRC-001"
+      ],
+      "scope": null,
+      "sha256": "ed0b96d850d16a0c589b50ef0cac7a6df16bee4308e91a022847e0f0619ecb64"
+    },
+    {
+      "artifact_id": "ART-006",
+      "type": "audit",
+      "revision": 2,
+      "status": "confirmed",
+      "path": "audit-screenplay-v002.md",
+      "depends_on": [
+        "ART-005"
+      ],
+      "source_refs": [
+        "SRC-001"
+      ],
+      "scope": null,
+      "sha256": "64e27f17c0da88d0c89cba4cee7753646f48c4288e081f24e9d2e08e1479e377",
+      "audit_result": {
+        "p0_count": 0,
+        "p1_count": 0,
+        "p2_count": 4,
+        "required_elements_total": 18,
+        "required_elements_passed": 18,
+        "decision": "pass"
+      }
+    },
+    {
+      "artifact_id": "ART-007",
+      "type": "storyboard-key",
+      "revision": 1,
+      "status": "confirmed",
+      "path": "storyboard-key-v001.md",
+      "depends_on": [
+        "ART-005",
+        "ART-006"
+      ],
+      "source_refs": [],
+      "scope": null,
+      "sha256": "38bc24cf8b3fe721eda7ce8c9860d843bffe2d548b8e85c4d15430c3553239d2"
+    },
+    {
+      "artifact_id": "ART-008",
+      "type": "storyboard-scene",
+      "revision": 1,
+      "status": "superseded",
+      "path": "storyboard-scene-v001.md",
+      "depends_on": [
+        "ART-005",
+        "ART-006"
+      ],
+      "source_refs": [],
+      "scope": null,
+      "sha256": "1f92632f341e90d74af601fc280111b7a94b6f9aebd58831628f754856102be9"
+    },
+    {
+      "artifact_id": "ART-009",
+      "type": "storyboard-detail",
+      "revision": 1,
+      "status": "confirmed",
+      "path": "storyboard-scenes-048-050-v001.md",
+      "depends_on": [
+        "ART-005",
+        "ART-006"
+      ],
+      "source_refs": [],
+      "scope": null,
+      "sha256": "b63fe01192f3882ee1fec8706514ab82c4678289b895ca846d7e22262fad9fda"
+    },
+    {
+      "artifact_id": "ART-010",
+      "type": "locked-assets",
+      "revision": 1,
+      "status": "confirmed",
+      "path": "asset-manifest.json",
+      "depends_on": [
+        "ART-005",
+        "ART-006"
+      ],
+      "source_refs": [],
+      "scope": "canonical-subset",
+      "sha256": "9f951e1b666a9038b8c77750ff67cbe42e874a242c9daced20046190f276a671"
+    }
+  ],
+  "checkpoints": [
+    {
+      "checkpoint_id": "CHK-001",
+      "stage": "brief",
+      "decision": "confirmed",
+      "authorization": "legacy example record",
+      "sequence": 1,
+      "affects": [
+        "ART-001"
+      ]
+    },
+    {
+      "checkpoint_id": "CHK-002",
+      "stage": "outline",
+      "decision": "confirmed",
+      "authorization": "legacy example record",
+      "sequence": 2,
+      "affects": [
+        "ART-002"
+      ]
+    },
+    {
+      "checkpoint_id": "CHK-003",
+      "stage": "screenplay",
+      "decision": "confirmed",
+      "authorization": "legacy example record",
+      "sequence": 3,
+      "affects": [
+        "ART-005"
+      ]
+    }
+  ]
+}

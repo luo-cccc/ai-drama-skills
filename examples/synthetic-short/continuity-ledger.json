@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "project_id": "PROJECT-001",
+  "ledger_version": 1,
+  "scopes": [
+    {
+      "scope_id": "screenplay-scenes-001-005",
+      "sequence": 1,
+      "start_snapshot": {
+        "PROP-001": {"owner": "CHAR-002", "location": "station", "holder": "CHAR-002"},
+        "PROP-002": {"owner": "CHAR-001", "holder": "CHAR-001"},
+        "PROP-003": {"owner": "CHAR-002", "location": "last-bus-back-row", "recovery": "missing"}
+      },
+      "events": [
+        {"event_id": "EVT-001", "asset_id": "PROP-001", "field": "holder", "before": "CHAR-002", "after": "CHAR-001", "at_ms": null, "scene_ref": "SCN-002", "shot_ref": null, "evidence_ref": "ART-005:场2捡起旧伞"},
+        {"event_id": "EVT-002", "asset_id": "PROP-002", "field": "holder", "before": "CHAR-001", "after": "CHAR-002", "at_ms": null, "scene_ref": "SCN-002", "shot_ref": null, "evidence_ref": "ART-005:场2递保温杯"},
+        {"event_id": "EVT-003", "asset_id": "PROP-003", "field": "recovery", "before": "missing", "after": "found", "at_ms": null, "scene_ref": "SCN-003", "shot_ref": null, "evidence_ref": "ART-005:场3电台确认"},
+        {"event_id": "EVT-004", "asset_id": "PROP-001", "field": "owner", "before": "CHAR-002", "after": "CHAR-001", "at_ms": null, "scene_ref": "SCN-004", "shot_ref": null, "evidence_ref": "ART-005:场4借伞"},
+        {"event_id": "EVT-005", "asset_id": "PROP-001", "field": "location", "before": "station", "after": "school-hall-exterior", "at_ms": null, "scene_ref": "SCN-005", "shot_ref": null, "evidence_ref": "ART-005:场5举伞"}
+      ],
+      "end_snapshot": {
+        "PROP-001": {"owner": "CHAR-001", "location": "school-hall-exterior", "holder": "CHAR-001"},
+        "PROP-002": {"owner": "CHAR-001", "holder": "CHAR-002"},
+        "PROP-003": {"owner": "CHAR-002", "location": "last-bus-back-row", "recovery": "found"}
+      }
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+interface:
+  display_name: "AI 短剧分镜内核"
+  short_description: "按 profile 画幅、语言与精确时长校验并导入 H3 分镜"
+  default_prompt: "Use $ai-drama-short-drama-storyboard with governed promptLang, profile dialogue tag, aspect ratio, and exact episode closure."
+policy:
+  allow_implicit_invocation: false

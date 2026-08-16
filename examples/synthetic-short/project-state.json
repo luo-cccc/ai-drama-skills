@@ -1,0 +1,252 @@
+{
+  "schema_version": "1.0",
+  "project": {
+    "project_id": "PROJECT-001",
+    "title": "最后一班灯",
+    "slug": "last-light",
+    "locale": "zh-CN",
+    "format": null,
+    "target_runtime_ms": 360000,
+    "scene_ids": ["SCN-001", "SCN-002", "SCN-003", "SCN-004", "SCN-005"]
+  },
+  "stage": "shots",
+  "configuration": {
+    "checkpoint_policy": "key-nodes",
+    "automatic_authorization": false,
+    "clip_max_duration_ms": 30000,
+    "audio_policy": "preserve-dialogue-environment",
+    "subtitle_policy": "unspecified",
+    "aspect_ratio": "16:9",
+    "generator": "unspecified",
+    "editing_policy": "continuity-led",
+    "visual_reset_policy": "story-driven",
+    "dialogue_rate_chars_per_second": 4.5
+  },
+  "sources": [
+    {
+      "source_id": "SRC-001",
+      "kind": "complete-story",
+      "path": "source-story.md",
+      "availability": "available",
+      "authority": "canonical",
+      "sha256": "1e20c6013cfd36c4a84b391285c9b5cdcc18eaa95b87787165faa2064e7c9d97"
+    }
+  ],
+  "artifacts": [
+    {
+      "artifact_id": "ART-001",
+      "type": "production-brief",
+      "revision": 1,
+      "status": "confirmed",
+      "path": "production-brief-v001.md",
+      "depends_on": [],
+      "source_refs": [
+        "SRC-001"
+      ],
+      "scope": null,
+      "sha256": "33cbe687dd4c818101381812fd8c5caa8b15175eee9847ef28c32b6fdd5efc36"
+    },
+    {
+      "artifact_id": "ART-002",
+      "type": "scene-outline",
+      "revision": 1,
+      "status": "confirmed",
+      "path": "scene-outline-v001.md",
+      "depends_on": [
+        "ART-001"
+      ],
+      "source_refs": [
+        "SRC-001"
+      ],
+      "scope": null,
+      "sha256": "35959699089e91e2dcd3966e19729393c46c1645f9f018e482cc54ddf947ffb4"
+    },
+    {
+      "artifact_id": "ART-003",
+      "type": "screenplay",
+      "revision": 1,
+      "status": "superseded",
+      "path": "screenplay-v001.md",
+      "depends_on": [
+        "ART-001",
+        "ART-002"
+      ],
+      "source_refs": [
+        "SRC-001"
+      ],
+      "scope": null,
+      "sha256": "2a7ea4aa1bb8e8d0fe2e40679055a00a6b9eb6900c54829aee84a47895beeae7"
+    },
+    {
+      "artifact_id": "ART-004",
+      "type": "audit",
+      "revision": 1,
+      "status": "superseded",
+      "path": "audit-screenplay-v001.md",
+      "depends_on": [
+        "ART-003"
+      ],
+      "source_refs": [
+        "SRC-001"
+      ],
+      "scope": null,
+      "sha256": "09b2bbbd3e27983a1d8b65703f1fe91879006670dab5f776f46064f7caeb4710",
+      "audit_result": {
+        "p0_count": 0,
+        "p1_count": 1,
+        "p2_count": 1,
+        "required_elements_total": 5,
+        "required_elements_passed": 4,
+        "decision": "revise"
+      }
+    },
+    {
+      "artifact_id": "ART-005",
+      "type": "screenplay",
+      "revision": 2,
+      "status": "confirmed",
+      "path": "screenplay-v002.md",
+      "depends_on": [
+        "ART-001",
+        "ART-002",
+        "ART-004"
+      ],
+      "source_refs": [
+        "SRC-001"
+      ],
+      "scope": null,
+      "sha256": "c4f150cec30ab181a0610708e6055d5fa47f4905b94b7e6db7d42006261106ef"
+    },
+    {
+      "artifact_id": "ART-006",
+      "type": "audit",
+      "revision": 2,
+      "status": "confirmed",
+      "path": "audit-screenplay-v002.md",
+      "depends_on": [
+        "ART-005"
+      ],
+      "source_refs": [
+        "SRC-001"
+      ],
+      "scope": null,
+      "sha256": "4529301e988e33cc98ed7f44ecb8a13d1d2538ea65e5fa42399ef5a3edb8d55e",
+      "audit_result": {
+        "p0_count": 0,
+        "p1_count": 0,
+        "p2_count": 0,
+        "required_elements_total": 5,
+        "required_elements_passed": 5,
+        "decision": "pass"
+      }
+    },
+    {
+      "artifact_id": "ART-007",
+      "type": "locked-assets",
+      "revision": 1,
+      "status": "confirmed",
+      "path": "asset-manifest.json",
+      "depends_on": [
+        "ART-005",
+        "ART-006"
+      ],
+      "source_refs": [
+        "SRC-001"
+      ],
+      "scope": null,
+      "sha256": "5aaabc7534cf5303d4898e0901e52fa1eb7afd250c3d7edfc3386cd0ad1d9920"
+    },
+    {
+      "artifact_id": "ART-008",
+      "type": "shot-plan",
+      "revision": 1,
+      "status": "confirmed",
+      "path": "shot-plan.json",
+      "depends_on": [
+        "ART-005",
+        "ART-006"
+      ],
+      "source_refs": [
+        "SRC-001"
+      ],
+      "scope": "scene-005",
+      "sha256": "bfb09b24522d9700c43fbb3d92072d20d1b6aedc5c8252cdcb328d471996c584"
+    },
+    {
+      "artifact_id": "ART-009",
+      "type": "storyboard",
+      "revision": 1,
+      "status": "confirmed",
+      "path": "storyboard-v001.md",
+      "depends_on": [
+        "ART-008"
+      ],
+      "source_refs": [
+        "SRC-001"
+      ],
+      "scope": "scene-005",
+      "sha256": "115610102c308a5aa0880daf20c4cd79c7af16cc9bece677a9d9b35af950bc34"
+    }
+  ],
+  "checkpoints": [
+    {
+      "checkpoint_id": "CHK-001",
+      "stage": "development",
+      "decision": "confirmed",
+      "authorization": "synthetic fixture decision",
+      "sequence": 1,
+      "affects": []
+    },
+    {
+      "checkpoint_id": "CHK-002",
+      "stage": "brief",
+      "decision": "confirmed",
+      "authorization": "synthetic fixture decision",
+      "sequence": 2,
+      "affects": [
+        "ART-001"
+      ]
+    },
+    {
+      "checkpoint_id": "CHK-003",
+      "stage": "outline",
+      "decision": "confirmed",
+      "authorization": "synthetic fixture decision",
+      "sequence": 3,
+      "affects": [
+        "ART-002"
+      ]
+    },
+    {
+      "checkpoint_id": "CHK-004",
+      "stage": "screenplay",
+      "decision": "confirmed",
+      "authorization": "synthetic fixture decision",
+      "sequence": 4,
+      "affects": [
+        "ART-005"
+      ]
+    },
+    {
+      "checkpoint_id": "CHK-005",
+      "stage": "assets",
+      "decision": "confirmed",
+      "authorization": "synthetic fixture decision",
+      "sequence": 5,
+      "affects": [
+        "ART-007"
+      ]
+    },
+    {
+      "checkpoint_id": "CHK-006",
+      "stage": "shots",
+      "decision": "confirmed",
+      "authorization": "synthetic fixture decision",
+      "sequence": 6,
+      "affects": [
+        "ART-008",
+        "ART-009"
+      ]
+    }
+  ]
+}

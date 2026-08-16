@@ -1,0 +1,6 @@
+interface:
+  display_name: "AI 剧本创作"
+  short_description: "把单部成熟故事或明确局部范围转为提示包、分场与标准剧本"
+  default_prompt: "使用 $ai-drama-screenplay 处理这个单部作品或明确局部范围；完整短剧系列改用 $ai-drama-short-drama。"
+policy:
+  allow_implicit_invocation: false

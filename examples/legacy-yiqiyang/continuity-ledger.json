@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "project_id": "PROJECT-001",
+  "ledger_version": 1,
+  "scopes": [
+    {
+      "scope_id": "scenes-022-026",
+      "sequence": 1,
+      "start_snapshot": {"PROP-013": {"state": "unused"}},
+      "events": [
+        {"event_id": "EVT-001", "asset_id": "PROP-013", "field": "state", "before": "unused", "after": "applied", "at_ms": null, "scene_ref": "SCN-022", "shot_ref": null, "evidence_ref": "ART-005:场22"},
+        {"event_id": "EVT-002", "asset_id": "PROP-013", "field": "state", "before": "applied", "after": "wrapper-retained", "at_ms": null, "scene_ref": "SCN-026", "shot_ref": null, "evidence_ref": "ART-005:场26"}
+      ],
+      "end_snapshot": {"PROP-013": {"state": "wrapper-retained"}}
+    },
+    {
+      "scope_id": "scenes-045-050",
+      "sequence": 2,
+      "start_snapshot": {"PROP-020": {"state": "new"}, "CHAR-003": {"location": "home"}},
+      "events": [
+        {"event_id": "EVT-003", "asset_id": "PROP-020", "field": "state", "before": "new", "after": "scratched", "at_ms": null, "scene_ref": "SCN-045", "shot_ref": null, "evidence_ref": "ART-005:场45"},
+        {"event_id": "EVT-004", "asset_id": "CHAR-003", "field": "location", "before": "home", "after": "cafe", "at_ms": null, "scene_ref": "SCN-048", "shot_ref": null, "evidence_ref": "ART-005:场48"}
+      ],
+      "end_snapshot": {"PROP-020": {"state": "scratched"}, "CHAR-003": {"location": "cafe"}}
+    }
+  ]
+}
