@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.ai-drama-forging/schemas/short-drama-engine.schema.json",
+  "title": "AI Drama Forging Short Drama Engine State",
+  "type": "object",
+  "required": ["schema_version", "project_id", "engine_snapshot", "profile", "attachment", "mappings"],
+  "properties": {
+    "schema_version": {"enum": ["1.0", "2.0"]},
+    "engine_revision": {"type": "integer", "minimum": 1},
+    "project_id": {"type": "string", "pattern": "^PROJECT-[0-9]{3}$"},
+    "engine_snapshot": {
+      "type": "object",
+      "required": ["upstream", "adaptation_version", "manifest_sha256"],
+      "properties": {
+        "upstream": {"type": "string", "minLength": 1},
+        "adaptation_version": {"type": "string", "minLength": 1},
+        "manifest_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "versions": {"type": "object", "additionalProperties": {"type": "string"}},
+        "runtime_files": {"type": "object", "additionalProperties": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+      },
+      "additionalProperties": false
+    },
+    "profile": {
+      "type": "object",
+      "required": ["episode_count", "episode_duration_ms", "genre", "adaptation_mode", "report_language", "prompt_language", "style", "generator", "h3"],
+      "properties": {
+        "episode_count": {"type": "integer", "minimum": 1},
+        "episode_duration_ms": {"type": "integer", "minimum": 1},
+        "genre": {"type": "string", "minLength": 1},
+        "adaptation_mode": {"enum": ["faithful", "core-extraction", "shell-rebuild"]},
+        "report_language": {"type": "string", "minLength": 2},
+        "prompt_language": {"enum": ["en", "zh"]},
+        "dialogue_language": {"type": "string", "minLength": 2},
+        "style": {"enum": ["realistic", "hand-painted-cel"]},
+        "aspect_ratio": {"type": "string", "minLength": 1},
+        "generator": {"const": "minimax-h3"},
+        "h3": {
+          "type": "object",
+          "required": ["max_segment_ms", "dialogue_tag"],
+          "properties": {
+            "max_segment_ms": {"type": "integer", "minimum": 1},
+            "dialogue_tag": {"type": "string", "pattern": "^<d>\\[[A-Za-z-]+\\]$"}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "attachment": {
+      "type": "object",
+      "required": ["mode", "status"],
+      "properties": {
+        "mode": {"enum": ["new", "outline-conversion"]},
+        "status": {"enum": ["attached", "conversion-required", "active"]},
+        "legacy_outline_artifact_id": {"type": "string", "pattern": "^ART-[0-9]{3}$"}
+      },
+      "additionalProperties": false
+    },
+    "mappings": {
+      "type": "object",
+      "required": ["characters", "scenes", "props", "scene_occurrences", "storyboard"],
+      "properties": {
+        "characters": {"type": "array", "items": {"$ref": "#/$defs/asset_mapping"}},
+        "scenes": {"type": "array", "items": {"$ref": "#/$defs/asset_mapping"}},
+        "props": {"type": "array", "items": {"$ref": "#/$defs/asset_mapping"}},
+        "scene_occurrences": {"type": "array", "items": {"$ref": "#/$defs/occurrence_mapping"}},
+        "storyboard": {"type": "array", "items": {"$ref": "#/$defs/storyboard_mapping"}}
+      },
+      "additionalProperties": false
+    },
+    "aggregate": {
+      "type": "object",
+      "required": ["shot_plan_path", "scope"],
+      "properties": {
+        "artifact_id": {"type": "string", "pattern": "^ART-[0-9]{3}$"},
+        "shot_plan_path": {"type": "string", "minLength": 1},
+        "projection_path": {"const": "shot-plan.json"},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "scope": {"type": "object", "required": ["kind"], "properties": {"kind": {"const": "series"}}, "additionalProperties": false}
+      },
+      "additionalProperties": false
+    },
+    "completion": {
+      "type": "object",
+      "required": ["authorization"],
+      "properties": {
+        "authorization": {"type": "string", "minLength": 1},
+        "aggregate_artifact_id": {"type": "string", "pattern": "^ART-[0-9]{3}$"},
+        "aggregate_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "series_audit_artifact_id": {"type": "string", "pattern": "^ART-[0-9]{3}$"},
+        "series_audit_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "locked_assets_artifact_id": {"type": "string", "pattern": "^ART-[0-9]{3}$"},
+        "locked_assets_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"schema_version": {"const": "2.0"}}, "required": ["schema_version"]},
+      "then": {
+        "required": ["engine_revision"],
+        "properties": {
+          "profile": {"required": ["dialogue_language", "aspect_ratio"]},
+          "aggregate": {"required": ["artifact_id", "projection_path", "sha256"]},
+          "completion": {"required": ["aggregate_artifact_id", "aggregate_sha256", "series_audit_artifact_id", "series_audit_sha256", "locked_assets_artifact_id", "locked_assets_sha256"]}
+        }
+      }
+    }
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "asset_mapping": {
+      "type": "object",
+      "required": ["upstream_id", "forging_id", "name", "status"],
+      "properties": {
+        "upstream_id": {"type": "string", "minLength": 1},
+        "forging_id": {"type": "string", "pattern": "^(CHAR|SCENE|PROP)-[0-9]{3}$"},
+        "name": {"type": "string", "minLength": 1},
+        "status": {"enum": ["active", "retired"]}
+      },
+      "additionalProperties": false
+    },
+    "occurrence_mapping": {
+      "type": "object",
+      "required": ["key", "scene_asset_id", "forging_id", "status"],
+      "properties": {
+        "key": {"type": "string", "minLength": 1},
+        "scene_asset_id": {"type": "string", "pattern": "^SCENE-[0-9]{3}$"},
+        "forging_id": {"type": "string", "pattern": "^SCN-[0-9]{3}$"},
+        "status": {"enum": ["active", "retired"]}
+      },
+      "additionalProperties": false
+    },
+    "storyboard_mapping": {
+      "type": "object",
+      "required": ["key", "generation_group", "beat_id", "shot_id", "status"],
+      "properties": {
+        "key": {"type": "string", "minLength": 1},
+        "generation_group": {"type": "string", "minLength": 1},
+        "beat_id": {"type": "string", "pattern": "^BEAT-[0-9]{3}$"},
+        "shot_id": {"type": "string", "pattern": "^SHOT-[0-9]{3}$"},
+        "status": {"enum": ["active", "retired"]}
+      },
+      "additionalProperties": false
+    }
+  }
+}

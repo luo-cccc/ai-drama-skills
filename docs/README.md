@@ -1,6 +1,6 @@
 # 文档索引
 
-本目录保存操作指南。机器可执行规范位于 `schemas/`，跨 Skill 的 normative contract 位于 `shared/references/`，Skill 的职责与调用规则位于 `src/skills/`。
+本目录保存操作指南。机器可执行规范位于 `schemas/`，跨 Skill 的 normative contract 位于 `shared/references/`，Skill 的职责与调用规则位于 `src/skills/`，标准发现入口位于 `.agents/skills/`。
 
 ## 按任务查阅
 
@@ -22,4 +22,4 @@
 4. 本目录的操作示例。
 5. `examples/`、历史报告和生成输出。
 
-`dist/` 是构建结果，`engine/shuohao-runtime/` 是同步结果，`vendor/shuohao/upstream/` 是只读来源快照；三者都不是独立文档所有者。
+`.agents/skills/` 是受版本控制的标准安装面，`dist/` 是可选临时构建，`engine/shuohao-runtime/` 是同步结果，`vendor/shuohao/upstream/` 是只读来源快照；它们都不是独立文档所有者。

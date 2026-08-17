@@ -1,0 +1,6 @@
+interface:
+  display_name: "AI 剧本审计"
+  short_description: "输出六键 canonical audit JSON，并分离机器门与创意复核"
+  default_prompt: "使用 $ai-drama-script-audit 生成六键 canonical audit_result、证据化 findings 与独立创意复核结论。"
+policy:
+  allow_implicit_invocation: true

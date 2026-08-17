@@ -21,6 +21,7 @@ from tests.helpers import ROOT, SCRIPTS, load_module, sample_plan, tree_hashes, 
 timeline = load_module("timeline_cli", SCRIPTS / "timeline_cli.py")
 validator = load_module("validate_project", SCRIPTS / "validate_project.py")
 packager = load_module("package_skills", SCRIPTS / "package_skills.py")
+package_verifier = load_module("verify_dist", ROOT / "tests" / "verify_dist.py")
 state_cli = load_module("state_cli", SCRIPTS / "state_cli.py")
 router = load_module("route_cli", SCRIPTS / "route_cli.py")
 media_analysis = load_module("media_analysis_cli", SCRIPTS / "media_analysis_cli.py")
@@ -97,6 +98,14 @@ class SkillSuiteTests(unittest.TestCase):
                 if skill.name.startswith("ai-drama-short-drama-"):
                     self.assertTrue((skill / "references" / "shuohao" / "workflow.md").is_file())
                     self.assertTrue((skill / "references" / "short-drama-prompt-governance.md").is_file())
+
+    def test_standard_skills_repository_matches_canonical_build(self):
+        installed = ROOT / ".agents" / "skills"
+        self.assertEqual([], package_verifier.verify(installed))
+        with tempfile.TemporaryDirectory() as temp:
+            rebuilt = Path(temp) / "skills"
+            packager.build(rebuilt)
+            self.assertEqual(tree_hashes(rebuilt), tree_hashes(installed))
 
     def test_packaging_preserves_existing_output_when_swap_is_blocked(self):
         with tempfile.TemporaryDirectory() as temp:

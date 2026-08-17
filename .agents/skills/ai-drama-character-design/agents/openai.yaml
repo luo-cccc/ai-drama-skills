@@ -1,0 +1,6 @@
+interface:
+  display_name: "AI 角色设计"
+  short_description: "按 profile 风格生成角色设定，并逐张检查真实 raster"
+  default_prompt: "使用 $ai-drama-character-design 按 production profile 制作角色设定板，并逐张检查最终 raster。"
+policy:
+  allow_implicit_invocation: true

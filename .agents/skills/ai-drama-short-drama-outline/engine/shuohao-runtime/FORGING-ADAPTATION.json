@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "style_policy": {
+    "public": [
+      "realistic",
+      "hand-painted-cel"
+    ],
+    "legacy_import_normalization": true
+  },
+  "governance": "Forging scope, evidence, audit, transaction, and timeline contracts"
+}

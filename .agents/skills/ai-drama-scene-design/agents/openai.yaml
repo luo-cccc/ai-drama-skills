@@ -1,0 +1,6 @@
+interface:
+  display_name: "AI 场景设计"
+  short_description: "生成场景视图与 VR，并逐张 raster QC 或标记 qc-incomplete"
+  default_prompt: "使用 $ai-drama-scene-design 制作空间一致的场景图；逐张检查 raster，VR 无球面检查工具时用 status incomplete 并记录 qc-incomplete。"
+policy:
+  allow_implicit_invocation: true

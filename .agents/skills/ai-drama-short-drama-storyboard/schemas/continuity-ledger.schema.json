@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.ai-drama-forging/schemas/continuity-ledger.schema.json",
+  "title": "AI Drama Forging Continuity Ledger",
+  "type": "object",
+  "required": ["schema_version", "project_id", "ledger_version", "scopes"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "project_id": {"type": "string", "pattern": "^PROJECT-[0-9]{3}$"},
+    "ledger_version": {"type": "integer", "minimum": 1},
+    "scopes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["scope_id", "sequence", "start_snapshot", "events", "end_snapshot"],
+        "properties": {
+          "scope_id": {"type": "string", "minLength": 1},
+          "sequence": {"type": "integer", "minimum": 1},
+          "start_snapshot": {"type": "object"},
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["event_id", "asset_id", "field", "before", "after", "evidence_ref"],
+              "properties": {
+                "event_id": {"type": "string", "pattern": "^EVT-[0-9]{3}$"},
+                "asset_id": {"type": "string", "pattern": "^(CHAR|SCENE|PROP|MOTIF|COSTUME|BG)-[0-9]{3}(?:-V[0-9]{2})?$"},
+                "field": {"type": "string", "minLength": 1},
+                "before": {},
+                "after": {},
+                "at_ms": {"type": ["integer", "null"], "minimum": 0},
+                "scene_ref": {"type": ["string", "null"], "pattern": "^SCN-[0-9]{3}$"},
+                "shot_ref": {"type": ["string", "null"], "pattern": "^SHOT-[0-9]{3}$"},
+                "evidence_ref": {"type": "string", "minLength": 1}
+              },
+              "additionalProperties": false
+            }
+          },
+          "end_snapshot": {"type": "object"}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.ai-drama-forging/schemas/project-state.schema.json",
+  "title": "AI Drama Forging Project State",
+  "type": "object",
+  "required": ["schema_version", "project", "stage", "configuration", "sources", "artifacts", "checkpoints"],
+  "properties": {
+    "schema_version": {"enum": ["1.0", "2.0"]},
+    "project_revision": {"type": "integer", "minimum": 1},
+    "project": {
+      "type": "object",
+      "required": ["project_id", "title", "slug", "locale", "scene_ids"],
+      "properties": {
+        "project_id": {"type": "string", "pattern": "^PROJECT-[0-9]{3}$"},
+        "title": {"type": "string", "minLength": 1},
+        "slug": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "locale": {"type": "string", "minLength": 2},
+        "format": {"type": ["string", "null"]},
+        "target_runtime_ms": {"type": ["integer", "null"], "minimum": 1},
+        "episode_count": {"type": ["integer", "null"], "minimum": 1},
+        "scene_ids": {"type": "array", "items": {"type": "string", "pattern": "^SCN-[0-9]{3}$"}, "uniqueItems": true}
+      },
+      "additionalProperties": false
+    },
+    "stage": {"enum": ["intake", "development", "brief", "outline", "screenplay", "audit", "shots", "assets", "complete"]},
+    "configuration": {
+      "type": "object",
+      "required": ["checkpoint_policy", "automatic_authorization", "clip_max_duration_ms", "audio_policy", "subtitle_policy", "aspect_ratio", "generator", "editing_policy", "visual_reset_policy", "dialogue_rate_chars_per_second"],
+      "properties": {
+        "checkpoint_policy": {"enum": ["key-nodes", "automatic", "every-stage"]},
+        "automatic_authorization": {"type": "boolean"},
+        "clip_max_duration_ms": {"type": "integer", "minimum": 1},
+        "audio_policy": {"type": "string"},
+        "subtitle_policy": {"type": "string"},
+        "aspect_ratio": {"type": "string", "minLength": 1},
+        "generator": {"type": "string", "minLength": 1},
+        "editing_policy": {"type": "string", "minLength": 1},
+        "visual_reset_policy": {"type": "string", "minLength": 1},
+        "dialogue_rate_chars_per_second": {"type": "number", "minimum": 1, "maximum": 20},
+        "report_language": {"type": "string", "minLength": 2},
+        "prompt_language": {"type": "string", "minLength": 2},
+        "dialogue_language": {"type": "string", "minLength": 2},
+        "visual_style": {"type": "string", "minLength": 1},
+        "delivery_required": {"type": "boolean"},
+        "prompt_context_required": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "sources": {"type": "array", "items": {"$ref": "#/$defs/source"}},
+    "artifacts": {"type": "array", "items": {"$ref": "#/$defs/artifact"}},
+    "checkpoints": {"type": "array", "items": {"$ref": "#/$defs/checkpoint"}}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"schema_version": {"const": "2.0"}}, "required": ["schema_version"]},
+      "then": {
+        "required": ["project_revision"],
+        "properties": {
+          "configuration": {"required": ["report_language", "prompt_language", "dialogue_language", "visual_style", "delivery_required", "prompt_context_required"]},
+          "sources": {"items": {"required": ["trust_status", "rights"]}}
+        }
+      }
+    }
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "rights": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {"enum": ["user-owned", "authorized", "public-domain", "factual", "third-party-restricted", "unknown"]},
+        "basis": {"type": "string"},
+        "license": {"type": "string"},
+        "attribution": {"type": "string"},
+        "reviewed_by": {"type": "string"},
+        "reviewed_at": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object",
+      "required": ["source_id", "kind", "path", "availability", "authority", "sha256"],
+      "properties": {
+        "source_id": {"type": "string", "pattern": "^SRC-[0-9]{3}$"},
+        "kind": {"type": "string", "minLength": 1},
+        "path": {"type": ["string", "null"]},
+        "availability": {"enum": ["available", "missing", "not-distributed"]},
+        "authority": {"enum": ["canonical", "constraint", "reference", "unknown"]},
+        "trust_status": {"enum": ["untrusted-content", "trusted-project-data", "trusted-control"]},
+        "rights": {"$ref": "#/$defs/rights"},
+        "sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "artifact": {
+      "type": "object",
+      "required": ["artifact_id", "type", "revision", "status", "path", "depends_on", "source_refs"],
+      "properties": {
+        "artifact_id": {"type": "string", "pattern": "^ART-[0-9]{3}$"},
+        "type": {"type": "string", "minLength": 1},
+        "revision": {"type": "integer", "minimum": 1},
+        "status": {"enum": ["draft", "pending-confirmation", "confirmed", "superseded", "invalid"]},
+        "path": {"type": "string", "minLength": 1},
+        "depends_on": {"type": "array", "items": {"type": "string", "pattern": "^ART-[0-9]{3}$"}, "uniqueItems": true},
+        "source_refs": {"type": "array", "items": {"type": "string", "pattern": "^SRC-[0-9]{3}$"}, "uniqueItems": true},
+        "scope": {"oneOf": [{"type": "string"}, {"type": "null"}, {"$ref": "#/$defs/artifact_scope"}]},
+        "sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+        "audit_result": {"$ref": "#/$defs/audit_result"},
+        "report_stage": {"enum": ["development", "brief", "outline", "screenplay", "audit", "shots", "assets"]}
+      },
+      "allOf": [
+        {"if": {"properties": {"status": {"const": "confirmed"}}, "required": ["status"]}, "then": {"required": ["sha256"], "properties": {"sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}}},
+        {"if": {"properties": {"type": {"const": "engine-report"}}, "required": ["type"]}, "then": {"required": ["report_stage"]}, "else": {"not": {"required": ["report_stage"]}}}
+      ],
+      "additionalProperties": false
+    },
+    "artifact_scope": {
+      "oneOf": [
+        {"type": "object", "required": ["kind"], "properties": {"kind": {"const": "series"}}, "additionalProperties": false},
+        {"type": "object", "required": ["kind", "start", "end"], "properties": {"kind": {"const": "episodes"}, "start": {"type": "integer", "minimum": 1}, "end": {"type": "integer", "minimum": 1}}, "additionalProperties": false}
+      ]
+    },
+    "checkpoint": {
+      "type": "object",
+      "required": ["checkpoint_id", "stage", "decision", "authorization", "sequence", "affects"],
+      "properties": {
+        "checkpoint_id": {"type": "string", "pattern": "^CHK-[0-9]{3}$"},
+        "stage": {"enum": ["development", "brief", "outline", "screenplay", "audit", "shots", "assets"]},
+        "decision": {"enum": ["confirmed", "revise", "automatic", "rejected"]},
+        "authorization": {"type": "string", "minLength": 1},
+        "authorization_kind": {"enum": ["approval", "risk-acceptance", "automatic-policy"]},
+        "sequence": {"type": "integer", "minimum": 1},
+        "affects": {"type": "array", "items": {"type": "string", "pattern": "^ART-[0-9]{3}$"}, "uniqueItems": true}
+      },
+      "additionalProperties": false
+    },
+    "audit_result": {
+      "type": "object",
+      "required": ["p0_count", "p1_count", "p2_count", "required_elements_total", "required_elements_passed", "decision"],
+      "properties": {
+        "p0_count": {"type": "integer", "minimum": 0},
+        "p1_count": {"type": "integer", "minimum": 0},
+        "p2_count": {"type": "integer", "minimum": 0},
+        "required_elements_total": {"type": "integer", "minimum": 1},
+        "required_elements_passed": {"type": "integer", "minimum": 0},
+        "decision": {"enum": ["pass", "revise", "blocked", "accepted-with-risk"]}
+      },
+      "additionalProperties": false
+    }
+  }
+}

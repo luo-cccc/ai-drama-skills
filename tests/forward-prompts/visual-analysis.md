@@ -1,7 +1,7 @@
 Resolve `<WORKSPACE_ROOT>` to the root of the current checkout. Use `$ai-drama-character-design` and `$ai-drama-shot-analysis` by reading these packaged Skills:
 
-- `<WORKSPACE_ROOT>/dist/ai-drama-character-design/SKILL.md`
-- `<WORKSPACE_ROOT>/dist/ai-drama-shot-analysis/SKILL.md`
+- `<WORKSPACE_ROOT>/.agents/skills/ai-drama-character-design/SKILL.md`
+- `<WORKSPACE_ROOT>/.agents/skills/ai-drama-shot-analysis/SKILL.md`
 
 用户任务：按 `<WORKSPACE_ROOT>/tests/forward-fixtures/visual-and-analysis-input.md` 完成角色综合设定与短视频逐镜拉片。先运行 `<WORKSPACE_ROOT>/scripts/create_video_fixture.py`，把视频写入输出目录后再基于实际文件分析，不要读取脚本源码来推断切点。把全部产物写入 `<WORKSPACE_ROOT>/tests/.forward-runs/visual-analysis-r2`。
 

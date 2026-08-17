@@ -15,6 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SUITE = "ai-drama-forging"
+DEFAULT_OUTPUT = ROOT / ".agents" / "skills"
 
 
 def copy_file(source: Path, target: Path) -> None:
@@ -176,7 +177,11 @@ def build(output: Path) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", required=True)
+    parser.add_argument(
+        "--output",
+        default=str(DEFAULT_OUTPUT),
+        help="self-contained Skills directory (default: .agents/skills)",
+    )
     args = parser.parse_args()
     build(Path(args.output))
     return 0

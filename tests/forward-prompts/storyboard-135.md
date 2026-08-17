@@ -1,4 +1,4 @@
-Resolve `<WORKSPACE_ROOT>` to the root of the current checkout. Use `$ai-drama-storyboard` by reading `<WORKSPACE_ROOT>/dist/ai-drama-storyboard/SKILL.md`.
+Resolve `<WORKSPACE_ROOT>` to the root of the current checkout. Use `$ai-drama-storyboard` by reading `<WORKSPACE_ROOT>/.agents/skills/ai-drama-storyboard/SKILL.md`.
 
 用户任务：按 `<WORKSPACE_ROOT>/tests/forward-fixtures/storyboard-135-input.md` 生成 C 级执行分镜。把 `shot-plan.json`、`storyboard-v001.md` 和导出片段 JSON 写入 `<WORKSPACE_ROOT>/tests/.forward-runs/storyboard-135`。运行发行包中的时间轴工具校验并分段；最终消息只报告文件、精确总时长与校验结果。
 

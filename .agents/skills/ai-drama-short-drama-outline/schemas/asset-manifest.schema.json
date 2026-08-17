@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.ai-drama-forging/schemas/asset-manifest.schema.json",
+  "title": "AI Drama Forging Asset Manifest",
+  "type": "object",
+  "required": ["schema_version", "project_id", "manifest_version", "assets"],
+  "properties": {
+    "schema_version": {"enum": ["1.0", "2.0"]},
+    "project_id": {"type": "string", "pattern": "^PROJECT-[0-9]{3}$"},
+    "manifest_version": {"type": "integer", "minimum": 1},
+    "assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["asset_id", "type", "name", "aliases", "lock_status", "locked_fields", "evidence", "visual_dna"],
+        "properties": {
+          "asset_id": {"type": "string", "pattern": "^(CHAR|SCENE|PROP|MOTIF|COSTUME|BG)-[0-9]{3}(?:-V[0-9]{2})?$"},
+          "type": {"enum": ["character", "scene", "prop", "motif", "costume", "background-group"]},
+          "name": {"type": "string", "minLength": 1},
+          "aliases": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "lock_status": {"enum": ["unlocked", "partial", "locked", "stale"]},
+          "locked_fields": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "evidence": {"type": "array", "items": {"oneOf": [{"$ref": "#/$defs/evidence_v1"}, {"$ref": "#/$defs/claim_v2"}]}},
+          "visual_dna": {"type": "object"}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "evidence_v1": {
+      "type": "object",
+      "required": ["field", "level", "source_ref", "locator"],
+      "properties": {
+        "field": {"type": "string", "minLength": 1},
+        "level": {"enum": ["confirmed", "inferred", "unknown"]},
+        "source_ref": {"type": ["string", "null"]},
+        "locator": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "claim_v2": {
+      "type": "object",
+      "required": ["field", "status"],
+      "properties": {
+        "field": {"type": "string", "minLength": 1},
+        "status": {"enum": ["observed", "inferred", "proposed", "unknown"]},
+        "source_ref": {"type": ["string", "null"]},
+        "locator": {"type": ["string", "null"]},
+        "derived_from": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "produced_by_artifact": {"type": ["string", "null"], "pattern": "^ART-[0-9]{3}$"},
+        "reason": {"type": ["string", "null"]}
+      },
+      "allOf": [
+        {"if": {"properties": {"status": {"const": "observed"}}, "required": ["status"]}, "then": {"required": ["source_ref", "locator"], "properties": {"source_ref": {"type": "string", "minLength": 1}, "locator": {"type": "string", "minLength": 1}}}},
+        {"if": {"properties": {"status": {"const": "proposed"}}, "required": ["status"]}, "then": {"required": ["produced_by_artifact"], "properties": {"produced_by_artifact": {"type": "string", "pattern": "^ART-[0-9]{3}$"}}}},
+        {"if": {"properties": {"status": {"const": "unknown"}}, "required": ["status"]}, "then": {"required": ["reason"], "properties": {"reason": {"type": "string", "minLength": 1}}}}
+      ],
+      "additionalProperties": false
+    }
+  }
+}

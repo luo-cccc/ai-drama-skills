@@ -16,6 +16,7 @@ def maintained_markdown() -> list[Path]:
         ROOT / "docs",
         ROOT / "shared" / "references",
         ROOT / "src" / "skills",
+        ROOT / ".agents" / "skills",
         ROOT / "examples",
         ROOT / "tests",
     ):

@@ -1,0 +1,6 @@
+interface:
+  display_name: "AI 短剧大纲内核"
+  short_description: "先确认快版决策骨架，再校验并导入全剧分集结构权威真源"
+  default_prompt: "Use $ai-drama-short-drama-outline to validate and import a short-drama outline."
+policy:
+  allow_implicit_invocation: false

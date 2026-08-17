@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.ai-drama-forging/schemas/visual-delivery.schema.json",
+  "title": "AI Drama Forging Visual Delivery",
+  "type": "object",
+  "required": ["schema_version", "delivery_id", "mode", "status", "rights", "specification", "capabilities", "evidence", "design_decisions", "outputs", "failures"],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "delivery_id": {"type": "string", "pattern": "^VIS-[0-9]{3}$"},
+    "project_id": {"type": ["string", "null"], "pattern": "^PROJECT-[0-9]{3}$"},
+    "asset_id": {"type": ["string", "null"], "pattern": "^(CHAR|SCENE|PROP|MOTIF|COSTUME|BG)-[0-9]{3}(?:-V[0-9]{2})?$"},
+    "mode": {"enum": ["reconstruction", "concept"]},
+    "status": {"enum": ["generated", "edited", "prompt-only", "incomplete", "failed"]},
+    "rights": {"$ref": "#/$defs/rights"},
+    "specification": {
+      "type": "object",
+      "required": ["report_language", "prompt_language", "style", "aspect_ratio", "format"],
+      "properties": {
+        "report_language": {"type": "string", "minLength": 2},
+        "prompt_language": {"type": "string", "minLength": 2},
+        "style": {"type": "string", "minLength": 1},
+        "aspect_ratio": {"type": "string", "pattern": "^[1-9][0-9]*:[1-9][0-9]*$"},
+        "width_px": {"type": ["integer", "null"], "minimum": 1},
+        "height_px": {"type": ["integer", "null"], "minimum": 1},
+        "format": {"enum": ["png", "jpeg", "webp", "exr", "other"]},
+        "projection": {"enum": ["planar", "orthographic", "equirectangular", "other"]}
+      },
+      "additionalProperties": false
+    },
+    "capabilities": {
+      "type": "object",
+      "required": ["image_generation", "image_editing", "deterministic_layout", "vr_equirectangular"],
+      "properties": {
+        "image_generation": {"$ref": "#/$defs/capability"},
+        "image_editing": {"$ref": "#/$defs/capability"},
+        "deterministic_layout": {"$ref": "#/$defs/capability"},
+        "vr_equirectangular": {"$ref": "#/$defs/capability"}
+      },
+      "additionalProperties": false
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["field", "evidence_status", "source_ref", "locator"],
+        "properties": {
+          "field": {"type": "string", "minLength": 1},
+          "evidence_status": {"enum": ["observed", "inferred", "proposed", "unknown"]},
+          "source_ref": {"type": ["string", "null"]},
+          "locator": {"type": ["string", "null"]}
+        },
+        "additionalProperties": false
+      }
+    },
+    "design_decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["field", "value", "decision_status"],
+        "properties": {
+          "field": {"type": "string", "minLength": 1},
+          "value": {},
+          "decision_status": {"enum": ["proposed", "approved", "rejected", "superseded"]},
+          "authorization": {"type": ["string", "null"]}
+        },
+        "additionalProperties": false
+      }
+    },
+    "outputs": {"type": "array", "items": {"$ref": "#/$defs/output"}},
+    "failures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["class", "message"],
+        "properties": {
+          "class": {"enum": ["unavailable-tool", "rejected-request", "generation-error", "unreadable-output", "blank-output", "failed-visual-qc", "failed-vr-qc", "layout-error"]},
+          "message": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "$defs": {
+    "capability": {
+      "type": "object",
+      "required": ["status", "checked_by", "checked_at"],
+      "properties": {
+        "status": {"enum": ["available", "unavailable", "untested", "failed"]},
+        "checked_by": {"type": "string", "minLength": 1},
+        "checked_at": {"type": "string", "format": "date-time"},
+        "details": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "rights": {
+      "type": "object",
+      "required": ["status", "legal_clearance_claimed", "usage_basis"],
+      "properties": {
+        "status": {"enum": ["user-owned", "authorized", "public-domain", "factual", "third-party-restricted", "unknown"]},
+        "legal_clearance_claimed": {"const": false},
+        "usage_basis": {"type": "string", "minLength": 1},
+        "restrictions": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      },
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "required": ["role", "path", "sha256", "mime_type", "qc"],
+      "properties": {
+        "role": {"enum": ["unlettered", "labeled", "storyboard-frame", "panorama", "reference", "labels", "other"]},
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "mime_type": {"type": "string", "pattern": "^(image|text)/[A-Za-z0-9.+-]+$"},
+        "qc": {
+          "type": "object",
+          "required": ["decoded", "actual_width_px", "actual_height_px", "nonblank", "aspect_ratio_matches", "visual_review"],
+          "properties": {
+            "decoded": {"type": "boolean"},
+            "actual_width_px": {"type": ["integer", "null"], "minimum": 1},
+            "actual_height_px": {"type": ["integer", "null"], "minimum": 1},
+            "nonblank": {"type": "boolean"},
+            "aspect_ratio_matches": {"type": "boolean"},
+            "visual_review": {"enum": ["pass", "fail", "not-applicable", "not-run"]},
+            "vr_review": {"enum": ["pass", "fail", "not-applicable", "not-run"]},
+            "notes": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

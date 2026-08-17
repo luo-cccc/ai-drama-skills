@@ -26,11 +26,11 @@ python -m unittest discover -s tests -p "test_*.py" -v
 python scripts/validate_project.py examples/synthetic-short
 python scripts/validate_project.py examples/legacy-yiqiyang
 python scripts/sync_shuohao_snapshot.py --source ../shuohao-skills-main --check
-python scripts/package_skills.py --output dist
-python tests/verify_dist.py --dist dist
+python scripts/package_skills.py
+python tests/verify_dist.py
 ```
 
-`verify_dist.py` 不属于 `test_*.py` discovery；它单独检查 package manifest、运行依赖、包外 `--help` 导入和 package tree 无污染。release acceptance 要求 Python suite 无失败、所有 skip 有记录、snapshot/examples/dist 独立检查通过，并完成两次构建 tree-hash 比较。
+`verify_dist.py` 不属于 `test_*.py` discovery；它默认校验 `.agents/skills/`，单独检查标准目录、frontmatter、package manifest、依赖闭包、包外 `--help` 导入和 package tree 无污染。release acceptance 要求 Python suite 无失败、所有 skip 有记录、snapshot/examples/Skills 安装面独立检查通过，并完成两次构建 tree-hash 比较。
 
 ## 环境与 Skip
 

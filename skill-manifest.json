@@ -284,7 +284,7 @@
         },
         {
           "source": "engine/shuohao-adapted/skills/novel-characters/references",
-          "target": "references/shuohao/novel-characters"
+          "target": "references/shuohao/novel-characters/references"
         },
         {
           "source": "engine/shuohao-adapted/skills/novel-outline/SKILL.md",
@@ -292,7 +292,7 @@
         },
         {
           "source": "engine/shuohao-adapted/skills/novel-outline/references",
-          "target": "references/shuohao/novel-outline"
+          "target": "references/shuohao/novel-outline/references"
         },
         {
           "source": "engine/shuohao-adapted/skills/novel-art/SKILL.md",
@@ -300,7 +300,7 @@
         },
         {
           "source": "engine/shuohao-adapted/skills/novel-art/references",
-          "target": "references/shuohao/novel-art"
+          "target": "references/shuohao/novel-art/references"
         },
         {
           "source": "engine/shuohao-adapted/skills/novel-script/SKILL.md",
@@ -308,7 +308,7 @@
         },
         {
           "source": "engine/shuohao-adapted/skills/novel-script/references",
-          "target": "references/shuohao/novel-script"
+          "target": "references/shuohao/novel-script/references"
         },
         {
           "source": "engine/shuohao-adapted/skills/novel-storyboard/SKILL.md",
@@ -316,7 +316,15 @@
         },
         {
           "source": "engine/shuohao-adapted/skills/novel-storyboard/references",
-          "target": "references/shuohao/novel-storyboard"
+          "target": "references/shuohao/novel-storyboard/references"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-storyboard/README.md",
+          "target": "references/shuohao/novel-storyboard/README.md"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-storyboard/README.en.md",
+          "target": "references/shuohao/novel-storyboard/README.en.md"
         },
         {
           "source": "vendor/shuohao/snapshot-manifest.json",
@@ -375,7 +383,7 @@
         },
         {
           "source": "engine/shuohao-adapted/skills/novel-characters/references",
-          "target": "references/shuohao"
+          "target": "references/shuohao/references"
         },
         {
           "source": "vendor/shuohao/snapshot-manifest.json",
@@ -434,7 +442,7 @@
         },
         {
           "source": "engine/shuohao-adapted/skills/novel-outline/references",
-          "target": "references/shuohao"
+          "target": "references/shuohao/references"
         },
         {
           "source": "vendor/shuohao/snapshot-manifest.json",
@@ -493,7 +501,7 @@
         },
         {
           "source": "engine/shuohao-adapted/skills/novel-art/references",
-          "target": "references/shuohao"
+          "target": "references/shuohao/references"
         },
         {
           "source": "vendor/shuohao/snapshot-manifest.json",
@@ -553,7 +561,7 @@
         },
         {
           "source": "engine/shuohao-adapted/skills/novel-script/references",
-          "target": "references/shuohao"
+          "target": "references/shuohao/references"
         },
         {
           "source": "vendor/shuohao/snapshot-manifest.json",
@@ -614,7 +622,15 @@
         },
         {
           "source": "engine/shuohao-adapted/skills/novel-storyboard/references",
-          "target": "references/shuohao"
+          "target": "references/shuohao/references"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-storyboard/README.md",
+          "target": "references/shuohao/README.md"
+        },
+        {
+          "source": "engine/shuohao-adapted/skills/novel-storyboard/README.en.md",
+          "target": "references/shuohao/README.en.md"
         },
         {
           "source": "vendor/shuohao/snapshot-manifest.json",

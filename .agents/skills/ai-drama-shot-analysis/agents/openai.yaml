@@ -1,0 +1,6 @@
+interface:
+  display_name: "AI 逐镜拉片"
+  short_description: "基于实证、估算与未知等级拆解视频镜头、摄影、表演和声音"
+  default_prompt: "使用 $ai-drama-shot-analysis 对这个视频做逐镜拉片并标明证据等级。"
+policy:
+  allow_implicit_invocation: true

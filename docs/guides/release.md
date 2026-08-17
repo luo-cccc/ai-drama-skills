@@ -11,7 +11,7 @@
 - `engine/shuohao-runtime/`
 - `vendor/shuohao/` 中 manifest 指定文件
 
-不要手工编辑 `dist/`。不要把 `engine/shuohao-adapted/` 直接当发行 runtime；runtime 由 snapshot 同步生成。
+`.agents/skills/` 是从上述规范源生成并受版本控制的标准安装面。不要手工编辑 `.agents/skills/` 或 `dist/`。不要把 `engine/shuohao-adapted/` 直接当发行 runtime；runtime 由 snapshot 同步生成。
 
 ## 验证顺序
 
@@ -27,9 +27,11 @@ python scripts/sync_shuohao_snapshot.py --source ../shuohao-skills-main --check
 ## 构建
 
 ```bash
-python scripts/package_skills.py --output dist
-python tests/verify_dist.py --dist dist
+python scripts/package_skills.py
+python tests/verify_dist.py
 ```
+
+默认构建目标为 `.agents/skills/`。需要临时发布树时使用 `python scripts/package_skills.py --output dist`，并以 `python tests/verify_dist.py --dist dist` 校验。
 
 `verify_dist.py` 检查：
 
@@ -54,7 +56,7 @@ python tests/verify_dist.py --dist dist
 - 五套 Node selftest 计数；
 - example validator 和 Schema lint 结果；
 - snapshot 文件数和 manifest hash；
-- dist Skill 数、package file 数和 package manifest SHA；
+- 标准安装面 Skill 数、package file 数和 package manifest SHA；
 - 两次构建的 tree-hash 比较；
 - 未执行或条件跳过的项目。
 

@@ -1,0 +1,6 @@
+interface:
+  display_name: "AI 影视项目编排"
+  short_description: "按来源权威、权利、留档、审计与 profile 编排影视生产"
+  default_prompt: "使用 $ai-drama-forging 按 data-only 来源、统一权利政策、持久化决策、canonical audit 与 profile 契约推进项目。"
+policy:
+  allow_implicit_invocation: true

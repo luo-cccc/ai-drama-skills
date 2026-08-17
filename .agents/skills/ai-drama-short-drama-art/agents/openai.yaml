@@ -1,0 +1,6 @@
+interface:
+  display_name: "AI 短剧美术内核"
+  short_description: "按 profile 导入场景与关键因果道具，并逐张检查预览 raster"
+  default_prompt: "Use $ai-drama-short-drama-art with the production profile; include one-use causal props and inspect every preview raster before summary."
+policy:
+  allow_implicit_invocation: false

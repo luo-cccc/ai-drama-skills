@@ -62,6 +62,8 @@ Markdown、HTML 和排版图通常是面向人的派生产物。完整契约见 
 
 ## 快速开始
 
+克隆仓库后，ZCode、Codex 等兼容 Skills 发现器可直接读取 `.agents/skills/`。每个目录都是自包含 Skill，至少包含 `SKILL.md`，并按需携带 `references/`、`scripts/`、`assets/`、`schemas/` 和运行时文件。
+
 初始化：
 
 ```bash
@@ -95,6 +97,7 @@ python scripts/validate_project.py <PROJECT>
 ## 仓库分层
 
 ```text
+.agents/skills/          标准、受版本控制、可直接发现的 15 个自包含 Skill
 docs/                    操作指南和导航
 src/skills/              15 个 Skill 的规范源
 shared/references/       跨 Skill 的 packageable 规范契约
@@ -105,8 +108,10 @@ engine/shuohao-runtime/  同步生成的精简执行副本
 vendor/shuohao/upstream/ 固定 upstream snapshot，不手工修改
 examples/                v1 兼容与局部契约样例
 tests/                   自动化测试、fixture 和历史 forward 记录
-dist/                    生成的 15 个可安装 Skill，不作为规范源
+dist/                    可选的临时发布构建，不受版本控制
 ```
+
+编辑 `src/skills/`、共享规范、脚本或 Schema 后，运行打包器刷新 `.agents/skills/`。不要直接编辑 `.agents/skills/` 或 `dist/`。
 
 ## 验证
 
@@ -115,12 +120,12 @@ python -m unittest discover -s tests -p "test_*.py" -v
 python scripts/validate_project.py examples/synthetic-short
 python scripts/validate_project.py examples/legacy-yiqiyang
 python scripts/sync_shuohao_snapshot.py --source ../shuohao-skills-main --check
-python scripts/package_skills.py --output dist
-python tests/verify_dist.py --dist dist
+python scripts/package_skills.py
+python tests/verify_dist.py
 ```
 
 环境依赖、skip 条件和 release acceptance 见 [tests/README.md](tests/README.md)。最近一次记录的自动化发布验证见 [tests/release-validation.md](tests/release-validation.md)。历史 forward 报告仍是 stale evidence，不代表当前模型工作流通过。
 
 ## 发布边界
 
-`dist/` 只携带 Skill 执行所需的文档、脚本、Schema、runtime 和第三方通知，不包含操作指南。upstream、adapted、runtime 和 dist 的来源与修改关系见 [PROVENANCE.md](PROVENANCE.md)。这些说明用于工程溯源与许可披露，不替代法律意见。
+`.agents/skills/` 是仓库的标准安装面，`dist/` 仅在需要独立临时产物时通过 `--output dist` 生成。两者都只携带 Skill 执行所需的文档、脚本、Schema、runtime 和第三方通知，不包含操作指南。upstream、adapted、runtime 和安装面的来源与修改关系见 [PROVENANCE.md](PROVENANCE.md)。这些说明用于工程溯源与许可披露，不替代法律意见。

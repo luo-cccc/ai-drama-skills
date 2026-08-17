@@ -1,0 +1,6 @@
+interface:
+  display_name: "AI 影视资产"
+  short_description: "提取含关键一次性因果道具的资产、视觉 DNA 与连续性锚点"
+  default_prompt: "使用 $ai-drama-assets 提取稳定资产 ID；关键因果道具即使只出现一次也建资产。"
+policy:
+  allow_implicit_invocation: true

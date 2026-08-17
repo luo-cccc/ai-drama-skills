@@ -7,10 +7,18 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
+
+
+SKILL_NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+FRONTMATTER_RE = re.compile(r"\A---\n(.*?)\n---(?:\n|\Z)", re.S)
+BUNDLED_REFERENCE_RE = re.compile(
+    r"(?:`|\]\()((?:references|scripts|assets|schemas)/[^`)]+)"
+)
 
 
 def digest(path: Path) -> str:
@@ -44,6 +52,46 @@ def verify(dist: Path) -> list[str]:
     if not manifest_path.is_file():
         return ["package-manifest.json is missing"]
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if manifest.get("suite") != "ai-drama-forging":
+        errors.append("package manifest has an unexpected suite identity")
+    declared_skills = manifest.get("skills", [])
+    if not isinstance(declared_skills, list) or not declared_skills:
+        errors.append("package manifest does not declare any skills")
+        declared_skills = []
+    skill_dirs = sorted(path.name for path in dist.iterdir() if path.is_dir())
+    if sorted(declared_skills) != skill_dirs:
+        errors.append(
+            "skill directory inventory differs from package manifest: "
+            f"declared={sorted(declared_skills)}, actual={skill_dirs}"
+        )
+    for name in declared_skills:
+        skill = dist / name
+        if len(name) > 64 or not SKILL_NAME_RE.fullmatch(name):
+            errors.append(f"{name}: skill name is not lowercase kebab-case with at most 64 characters")
+            continue
+        skill_file = skill / "SKILL.md"
+        if not skill_file.is_file():
+            errors.append(f"{name}: SKILL.md is missing")
+            continue
+        text = skill_file.read_text(encoding="utf-8")
+        if len(text.splitlines()) > 500:
+            errors.append(f"{name}: SKILL.md exceeds 500 lines")
+        frontmatter = FRONTMATTER_RE.match(text)
+        if not frontmatter:
+            errors.append(f"{name}: SKILL.md has no valid YAML frontmatter block")
+            continue
+        fields = {}
+        for line in frontmatter.group(1).splitlines():
+            key, separator, value = line.partition(":")
+            if separator and not line.startswith((" ", "\t")):
+                fields[key.strip()] = value.strip()
+        if fields.get("name") != name:
+            errors.append(f"{name}: frontmatter name does not match its directory")
+        if not fields.get("description"):
+            errors.append(f"{name}: frontmatter description is empty")
+        for relative in sorted(set(BUNDLED_REFERENCE_RE.findall(text))):
+            if not (skill / relative).is_file():
+                errors.append(f"{name}: unresolved bundled dependency {relative}")
     expected = manifest.get("files", {})
     actual = {
         path.relative_to(dist).as_posix(): digest(path)
@@ -96,7 +144,7 @@ def verify(dist: Path) -> list[str]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--dist", default="dist")
+    parser.add_argument("--dist", default=".agents/skills")
     args = parser.parse_args()
     errors = verify(Path(args.dist).resolve())
     if errors:

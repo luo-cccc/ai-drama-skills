@@ -1,4 +1,4 @@
-Resolve `<WORKSPACE_ROOT>` to the root of the current checkout. Use `$ai-drama-forging` by reading `<WORKSPACE_ROOT>/dist/ai-drama-forging/SKILL.md` and the sibling packaged domain Skills it routes to.
+Resolve `<WORKSPACE_ROOT>` to the root of the current checkout. Use `$ai-drama-forging` by reading `<WORKSPACE_ROOT>/.agents/skills/ai-drama-forging/SKILL.md` and the sibling packaged domain Skills it routes to.
 
 用户任务：把下面的完整故事制作为 90 秒现实主义短片项目，输出提示包、分场、剧本 v001、审计 v001、剧本 v002、审计 v002、资产、连续性、精确分镜和不超过 30 秒的导出片段。把产物写入 `<WORKSPACE_ROOT>/tests/.forward-runs/mature-r2`，使用英文稳定文件名和简体中文正文。
 

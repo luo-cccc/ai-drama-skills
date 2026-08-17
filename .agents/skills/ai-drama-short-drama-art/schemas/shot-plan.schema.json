@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.ai-drama-forging/schemas/shot-plan.schema.json",
+  "title": "AI Drama Forging Shot Plan",
+  "type": "object",
+  "required": ["schema_version", "project_id", "plan_version", "target_runtime_ms", "profile", "scenes", "beats", "shots"],
+  "properties": {
+    "schema_version": {"enum": ["1.0", "2.0"]},
+    "project_id": {"type": "string", "pattern": "^PROJECT-[0-9]{3}$"},
+    "plan_version": {"type": "integer", "minimum": 1},
+    "scope": {"$ref": "#/$defs/scope"},
+    "timeline_start_ms": {"type": "integer", "minimum": 0},
+    "timeline_end_ms": {"type": "integer", "minimum": 1},
+    "target_runtime_ms": {"type": "integer", "minimum": 1},
+    "profile": {"$ref": "#/$defs/profile"},
+    "scenes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["scene_id"],
+        "properties": {
+          "scene_id": {"type": "string", "pattern": "^SCN-[0-9]{3}$"},
+          "name": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "beats": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["beat_id", "summary", "indivisible"],
+        "properties": {
+          "beat_id": {"type": "string", "pattern": "^BEAT-[0-9]{3}$"},
+          "summary": {"type": "string"},
+          "indivisible": {"type": "boolean"},
+          "source_scene_ref": {"type": "string", "minLength": 1},
+          "source_beat_range": {
+            "type": "array",
+            "prefixItems": [
+              {"type": "integer", "minimum": 1},
+              {"type": "integer", "minimum": 1}
+            ],
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "source_beats": {"type": "array", "minItems": 1, "items": {"type": "object"}}
+        },
+        "additionalProperties": false
+      }
+    },
+    "shots": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["shot_id", "scene_id", "beat_id", "start_ms", "end_ms", "framing", "angle", "movement", "transition", "visual", "assets"],
+        "properties": {
+          "shot_id": {"type": "string", "pattern": "^SHOT-[0-9]{3}$"},
+          "scene_id": {"type": "string", "pattern": "^SCN-[0-9]{3}$"},
+          "beat_id": {"type": "string", "pattern": "^BEAT-[0-9]{3}$"},
+          "start_ms": {"type": "integer", "minimum": 0},
+          "end_ms": {"type": "integer", "minimum": 1},
+          "framing": {"type": "string"},
+          "angle": {"type": "string"},
+          "movement": {"type": "string"},
+          "transition": {"type": "string"},
+          "visual": {"type": "string", "minLength": 1},
+          "performance": {"type": "string"},
+          "dialogue": {"type": "string"},
+          "sound": {"type": "string"},
+          "prompt": {"type": "string"},
+          "prompt_ref": {"type": "string", "minLength": 1},
+          "negative_constraints": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "model_parameters": {"type": "object"},
+          "generation_group": {"type": "string", "minLength": 1},
+          "assets": {"type": "array", "items": {"type": "string", "pattern": "^(CHAR|SCENE|PROP|MOTIF|COSTUME|BG)-[0-9]{3}(?:-V[0-9]{2})?$"}, "uniqueItems": true}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"schema_version": {"const": "2.0"}}, "required": ["schema_version"]},
+      "then": {
+        "required": ["scope", "timeline_start_ms", "timeline_end_ms"],
+        "properties": {
+          "beats": {"items": {"required": ["source_scene_ref", "source_beat_range", "source_beats"]}},
+          "shots": {"items": {"required": ["performance", "dialogue", "sound", "generation_group", "prompt_ref"]}}
+        }
+      }
+    }
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "scope": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["kind"],
+          "properties": {"kind": {"const": "series"}},
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["kind", "start", "end"],
+          "properties": {
+            "kind": {"const": "episodes"},
+            "start": {"type": "integer", "minimum": 1},
+            "end": {"type": "integer", "minimum": 1}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "profile": {
+      "type": "object",
+      "required": ["clip_max_duration_ms", "audio_policy", "subtitle_policy", "aspect_ratio", "generator", "editing_policy", "visual_reset_policy", "dialogue_rate_chars_per_second"],
+      "properties": {
+        "clip_max_duration_ms": {"type": "integer", "minimum": 1},
+        "audio_policy": {"type": "string"},
+        "subtitle_policy": {"type": "string"},
+        "aspect_ratio": {"type": "string", "minLength": 1},
+        "generator": {"type": "string", "minLength": 1},
+        "editing_policy": {"type": "string", "minLength": 1},
+        "visual_reset_policy": {"type": "string", "minLength": 1},
+        "dialogue_rate_chars_per_second": {"type": "number", "minimum": 1, "maximum": 20}
+      },
+      "additionalProperties": false
+    }
+  }
+}
