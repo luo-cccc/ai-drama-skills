@@ -27,15 +27,15 @@ Produce one declared character-design mode while preserving stable identity, evi
 
 ## Outputs
 
-- Tier 1: `visual-brief-vNNN.md` with `prompt-only` status and no generated-media claim.
-- Tier 2: actual unlettered/labeled outputs registered in `visual-delivery`, with hashes and deterministic checks; unresolved visual review remains incomplete.
-- Tier 3: required outputs pass individual visual review and applicable layout QC, then appear in the project delivery manifest.
+- `visual-brief-vNNN.md` with `prompt-only` status and no generated-media claim.
+- Actual unlettered/labeled outputs registered in `visual-delivery`, with hashes and deterministic checks; unresolved visual review remains incomplete.
+- Required outputs that pass individual visual review and applicable layout QC, then appear in the project delivery manifest. Delivery tier labels (Planning complete / Generation-ready / Media delivered) are project-level states in `delivery-contract.md`, not per-plate labels.
 
 ## Gates
 
 - Prompts and generated images do not lock identity facts. Only approved evidence updates the asset manifest.
 - Never replace original reference evidence with a generated result.
-- `generated`/`edited` requires readable nonblank outputs with matching aspect ratio; Tier 3 requires passing visual review.
+- `generated`/`edited` requires readable nonblank outputs with matching aspect ratio; delivery inclusion requires passing visual review.
 - Failed, blank, unreadable, uninspected, or misframed outputs remain `incomplete` or `failed`, never confirmed.
 - A changed locked asset requires a superseding locked-assets artifact with exact screenplay/audit dependencies and manifest hash.
 

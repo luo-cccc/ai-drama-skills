@@ -25,9 +25,9 @@ Run governed scene/prop concept development and import visual DNA plus optional 
 
 ## Outputs
 
-- Tier 1: canonical imported art candidates and prompt-only briefs.
-- Tier 2: preview media registered with visual-delivery evidence; assets remain `unlocked`.
-- Tier 3: only after Forging character/scene design workflows review, approve, manifest-lock, and include required media in a delivery manifest.
+- Canonical imported art candidates and prompt-only briefs (unlocked).
+- Preview media registered with visual-delivery evidence; assets remain `unlocked`.
+- Media delivery is a separate project-level state governed by `delivery-contract.md`; previews do not advance the project delivery tier.
 
 ## Gates
 

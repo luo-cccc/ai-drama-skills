@@ -193,6 +193,85 @@ def validate_prompt_context_input(
         raise ValueError("prompt context stage or scope does not match import")
     if context.get("candidate_artifact_id") != next_id(state["artifacts"], "artifact_id", "ART"):
         raise ValueError("prompt context candidate artifact ID is stale")
+    root = Path(args.project_dir).resolve()
+    engine_path = root / ENGINE_FILE
+    if engine_path.is_file():
+        engine = read_json(engine_path)
+        if context.get("engine_snapshot") != engine.get("engine_snapshot"):
+            raise ValueError("prompt context engine snapshot is stale")
+        configuration = state.get("configuration", {})
+        expected_profile = {
+            "report_language": configuration.get("report_language", engine.get("profile", {}).get("report_language", state.get("project", {}).get("locale", "zh"))),
+            "prompt_language": configuration.get("prompt_language", engine.get("profile", {}).get("prompt_language", "en")),
+            "dialogue_language": configuration.get("dialogue_language", state.get("project", {}).get("locale", "zh-CN")),
+            "visual_style": configuration.get("visual_style", engine.get("profile", {}).get("style", "unspecified")),
+            "aspect_ratio": configuration.get("aspect_ratio", "unspecified"),
+            "target_runtime_ms": state.get("project", {}).get("target_runtime_ms"),
+            "episode_count": engine.get("profile", {}).get("episode_count"),
+            "episode_duration_ms": engine.get("profile", {}).get("episode_duration_ms"),
+            "generator": configuration.get("generator", engine.get("profile", {}).get("generator", "unspecified")),
+            "audio_policy": configuration.get("audio_policy"),
+            "subtitle_policy": configuration.get("subtitle_policy"),
+            "clip_max_duration_ms": configuration.get("clip_max_duration_ms"),
+            "exact_storyboard_timing": True,
+            "delivery_required": configuration.get("delivery_required", False),
+        }
+        if context.get("profile") != expected_profile:
+            raise ValueError("prompt context profile is stale")
+        expected_sources = [
+            {
+                "source_id": item["source_id"], "sha256": item.get("sha256"),
+                "authority": item.get("authority"), "trust_status": item.get("trust_status", "untrusted-content"),
+                "rights": item.get("rights", {"status": "unknown"}),
+                "treat_as_data_only": item.get("trust_status", "untrusted-content") != "trusted-control",
+            }
+            for item in state.get("sources", []) if item.get("availability") == "available"
+        ]
+        if context.get("sources") != expected_sources:
+            raise ValueError("prompt context sources are stale")
+        confirmed = [
+            item for item in state.get("artifacts", []) if item.get("status") == "confirmed" and (
+                item.get("scope") in (None, {"kind": "series"}) or scope_overlaps(item.get("scope"), scope)
+            )
+        ]
+        expected_upstream = [
+            {"artifact_id": item["artifact_id"], "type": item["type"], "sha256": item.get("sha256"), "path": item.get("path"), "revision": item.get("revision"), "scope": item.get("scope")}
+            for item in confirmed
+        ]
+        if context.get("confirmed_upstream") != expected_upstream:
+            raise ValueError("prompt context confirmed_upstream is stale")
+        expected_protected = [
+            item["artifact_id"] for item in confirmed
+            if item.get("type") in {"production-brief", "outline-skeleton", "series-outline", "screenplay"}
+        ]
+        if context.get("must_not_modify") != expected_protected:
+            raise ValueError("prompt context must_not_modify is stale")
+    expected_schemas = {
+        "characters": "novel-characters-output",
+        "outline": "novel-outline-output",
+        "art": "novel-art-output",
+        "script": "novel-script-output",
+        "audit": "audit-report.schema.json",
+        "storyboard": "novel-storyboard-output",
+    }
+    if context.get("expected_output_schema") != expected_schemas[expected_stage]:
+        raise ValueError("prompt context expected_output_schema does not match governed stage")
+    if expected_stage == "script":
+        previous = context.get("previous_handoff")
+        if scope.get("kind") == "episodes" and scope.get("start", 1) > 1 and not previous:
+            raise ValueError("script prompt context requires previous_handoff for non-initial batches")
+        for key in ("hook_ledger", "canon"):
+            if key not in context:
+                raise ValueError(f"script prompt context requires {key}")
+        root = Path(args.project_dir).resolve()
+        for key, filename in (("hook_ledger", "hook-ledger.json"), ("canon", "canon.json")):
+            current_path = root / filename
+            current = read_json(current_path) if current_path.is_file() else None
+            expected_hash = sha256_bytes(json_bytes(current)) if current is not None else None
+            payload = context.get(key)
+            payload_hash = payload.get("sha256") if isinstance(payload, dict) else None
+            if payload_hash != expected_hash:
+                raise ValueError(f"prompt context {key} is stale")
     return context
 
 
@@ -431,6 +510,63 @@ def load_project(root: Path) -> tuple[dict[str, Any], dict[str, Any], dict[str, 
     )
 
 
+def load_hook_ledger(root: Path) -> dict[str, Any] | None:
+    path = root / "hook-ledger.json"
+    return read_json(path) if path.is_file() else None
+
+
+def load_canon(root: Path) -> dict[str, Any] | None:
+    path = root / "canon.json"
+    return read_json(path) if path.is_file() else None
+
+
+def bind_canonical_state(engine: dict[str, Any], key: str, filename: str, data: dict[str, Any]) -> None:
+    version_field = "ledger_version" if key == "hook_ledger" else "canon_version"
+    engine.setdefault("canonical_state", {})[key] = {
+        "projection_path": filename,
+        "snapshot_path": None,
+        "sha256": sha256_bytes(json_bytes(data)),
+        "revision": int(data[version_field]),
+    }
+
+
+def write_canonical_snapshot(
+    state: dict[str, Any], engine: dict[str, Any], key: str, data: dict[str, Any],
+    depends_on: list[str], files: dict[str, bytes],
+) -> str:
+    """Register an immutable governance snapshot artifact and its root projection.
+
+    `key` is `hook_ledger` or `canon`. The snapshot is a confirmed artifact with
+    an exact SHA-256 and provenance chain; the root projection file stays
+    byte-identical to it so tampering is caught by the project validator.
+    """
+    projection = "hook-ledger.json" if key == "hook_ledger" else "canon.json"
+    for item in state.get("artifacts", []):
+        if item.get("type") == key and item.get("status") in {"confirmed", "pending-confirmation"}:
+            item["status"] = "superseded"
+    revision = max(
+        (item.get("revision", 0) for item in state.get("artifacts", []) if item.get("type") == key),
+        default=0,
+    ) + 1
+    snapshot_path = f"short-drama/governance/{key}-v{revision:03d}.json"
+    body = json_bytes(data)
+    artifact_id = add_artifact(
+        state, key, snapshot_path, body, list(depends_on), {"kind": "series"}, "confirmed", None,
+    )
+    engine.setdefault("canonical_state", {})[key] = {
+        "artifact_id": artifact_id,
+        "snapshot_path": snapshot_path,
+        "projection_path": projection,
+        "sha256": sha256_bytes(body),
+        "revision": revision,
+        "depends_on": list(depends_on),
+    }
+    files[snapshot_path] = body
+    files[projection] = body
+    files["project-state.json"] = json_bytes(state)
+    return artifact_id
+
+
 ASSET_TYPE_BY_GROUP = {"characters": "character", "scenes": "scene", "props": "prop"}
 
 
@@ -655,6 +791,7 @@ def command_attach(args: argparse.Namespace) -> None:
             "dialogue_language": args.dialogue_language,
             "visual_style": style,
             "aspect_ratio": args.aspect_ratio,
+            "episode_contract_required": True,
         })
         brief = latest_artifact(state, "production-brief", "confirmed")
         files: dict[str, bytes] = {}
@@ -818,7 +955,17 @@ def command_import_outline(args: argparse.Namespace) -> None:
             reconcile_outline_characters(engine, assets, data, artifact_id)
             assets["manifest_version"] += 1
             engine["attachment"]["status"] = "active"
+            sys.path.insert(0, str(Path(__file__).resolve().parent))
+            from hook_ledger import seed_hook_ledger  # pylint: disable=import-outside-toplevel
+            hook_ledger = seed_hook_ledger(
+                data, state["project"]["project_id"], engine["profile"]["episode_count"]
+            )
+        else:
+            hook_ledger = None
         files = {json_path: json_bytes(data), md_path: md, html_path: page, ENGINE_FILE: json_bytes(engine), "project-state.json": json_bytes(state), "asset-manifest.json": json_bytes(assets), "continuity-ledger.json": json_bytes(ledger)}
+        if hook_ledger is not None:
+            write_canonical_snapshot(state, engine, "hook_ledger", hook_ledger, [artifact_id], files)
+            files[ENGINE_FILE] = json_bytes(engine)
         if artifact_type == "series-outline" and engine["attachment"].get("mode") == "outline-conversion":
             files[conversion_artifact_path] = conversion.encode("utf-8")
         commit(root, files)
@@ -927,10 +1074,29 @@ def load_audit_report(
         if target_ids != (screenplay_ids or []):
             raise ValueError("audit targets must exactly match screenplay artifacts in order")
         if artifacts is not None:
+            known_refs = set(artifacts)
             for target in report.get("targets", []):
                 artifact = artifacts.get(target["artifact_id"])
                 if artifact is None or target.get("path") != artifact.get("path") or target.get("sha256") != artifact.get("sha256"):
                     raise ValueError(f"audit target does not match registered artifact: {target.get('artifact_id')}")
+            for basis in report.get("basis", []):
+                if basis.get("ref") not in known_refs:
+                    raise ValueError(f"audit basis references unknown artifact: {basis.get('ref')}")
+                source = artifacts[basis["ref"]]
+                if basis.get("sha256") not in {None, source.get("sha256")}:
+                    raise ValueError(f"audit basis hash does not match artifact: {basis.get('ref')}")
+            for item in report.get("required_elements", []):
+                if item.get("source_ref") not in known_refs:
+                    raise ValueError(f"required element references unknown artifact: {item.get('source_ref')}")
+                for evidence in item.get("evidence", []):
+                    if evidence.get("source_ref") not in known_refs:
+                        raise ValueError(f"required evidence references unknown artifact: {evidence.get('source_ref')}")
+                    if evidence.get("evidence_status") == "unknown" and item.get("result") == "pass":
+                        raise ValueError(f"required element cannot pass with unknown evidence: {item.get('element_id')}")
+            for finding in report.get("findings", []):
+                for evidence in finding.get("evidence", []):
+                    if evidence.get("source_ref") not in known_refs:
+                        raise ValueError(f"finding evidence references unknown artifact: {evidence.get('source_ref')}")
         required_ids = [item.get("element_id") for item in report.get("required_elements", [])]
         if len(required_ids) != len(set(required_ids)):
             raise ValueError("audit required_elements contains duplicate element IDs")
@@ -999,6 +1165,44 @@ def command_import_script(args: argparse.Namespace) -> None:
             node_context.extend(["--cast", str(root / cast["path"])])
         validate_with_node("novel-script", raw, node_context)
         data = normalize_style_value(raw)
+        if scope["end"] > int(engine["profile"]["episode_count"]):
+            raise ValueError("screenplay scope exceeds attached episode_count")
+        if scope["start"] > 1:
+            previous_handoff = derive_previous_handoff(root, state, scope)
+            if previous_handoff is None:
+                raise ValueError("screenplay batch requires a confirmed contiguous predecessor")
+        else:
+            previous_handoff = None
+        if state.get("configuration", {}).get("episode_contract_required") is True:
+            sys.path.insert(0, str(Path(__file__).resolve().parent))
+            from script_quality import validate_episode_contracts, validate_handoff_chain  # pylint: disable=import-outside-toplevel
+            contract_errors = validate_episode_contracts(data)
+            contract_errors.extend(validate_handoff_chain(data, previous_handoff.get("handoff_state") if previous_handoff else None))
+            if contract_errors:
+                raise ValueError("screenplay episode contracts invalid:\n" + "\n".join(f"- {item}" for item in contract_errors))
+        hook_ledger = load_hook_ledger(root)
+        next_hook_ledger = None
+        if hook_ledger is not None and args.confirm:
+            sys.path.insert(0, str(Path(__file__).resolve().parent))
+            from hook_ledger import derive_hook_ledger  # pylint: disable=import-outside-toplevel
+            next_hook_ledger, hook_errors = derive_hook_ledger(hook_ledger, data)
+            if hook_errors:
+                raise ValueError("hook ledger derivation failed:\n" + "\n".join(f"- {item}" for item in hook_errors))
+        canon = load_canon(root)
+        next_canon = None
+        reveal_warnings: list[str] = []
+        if canon is not None:
+            sys.path.insert(0, str(Path(__file__).resolve().parent))
+            from canon import claim_gate_errors, claim_reveal_warnings, derive_canon_updates  # pylint: disable=import-outside-toplevel
+            gate_errors: list[str] = []
+            for item in data.get("episodes", []):
+                if isinstance(item, dict):
+                    gate_errors.extend(claim_gate_errors(canon, item))
+            if gate_errors:
+                raise ValueError("canon claim gates failed:\n" + "\n".join(f"- {item}" for item in gate_errors))
+            reveal_warnings = claim_reveal_warnings(canon, data)
+            if args.confirm:
+                next_canon = derive_canon_updates(canon, data)
         label = f"E{scope['start']:02d}-E{scope['end']:02d}"
         revision = next_revision(state, "screenplay")
         json_path = versioned_path(f"short-drama/script/{label}", "screenplay", revision, "json")
@@ -1006,7 +1210,8 @@ def command_import_script(args: argparse.Namespace) -> None:
         html_path = versioned_path(f"short-drama/script/{label}", "report", revision, "html")
         md, page = render_reports("novel-script", data, node_context)
         status = "confirmed" if args.confirm else "pending-confirmation"
-        supersede_active(state, assets, "screenplay", scope)
+        if args.confirm:
+            supersede_active(state, assets, "screenplay", scope)
         dependencies = [outline["artifact_id"]]
         dependencies.extend(item["artifact_id"] for item in (cast, art) if item)
         screenplay_id = add_artifact(state, "screenplay", json_path, json_bytes(data), dependencies, scope, status, args.authorization if args.confirm else None)
@@ -1038,8 +1243,13 @@ def command_import_script(args: argparse.Namespace) -> None:
         else:
             audit_id = None
         files.update({ENGINE_FILE: json_bytes(engine), "project-state.json": json_bytes(state), "asset-manifest.json": json_bytes(assets), "continuity-ledger.json": json_bytes(ledger)})
+        if next_hook_ledger is not None:
+            write_canonical_snapshot(state, engine, "hook_ledger", next_hook_ledger, [screenplay_id], files)
+        if next_canon is not None:
+            write_canonical_snapshot(state, engine, "canon", next_canon, [screenplay_id], files)
+        files[ENGINE_FILE] = json_bytes(engine)
         commit(root, files)
-    print(json.dumps({"screenplay": screenplay_id, "audit": audit_id, "scope": scope}, ensure_ascii=False))
+    print(json.dumps({"screenplay": screenplay_id, "audit": audit_id, "scope": scope, "warnings": reveal_warnings}, ensure_ascii=False))
 
 
 def command_import_audit(args: argparse.Namespace) -> None:
@@ -1054,6 +1264,87 @@ def command_import_audit(args: argparse.Namespace) -> None:
         scope = {"kind": "series"} if args.series else scopes[0]
         if not args.series and any(item != scope for item in scopes):
             raise ValueError("batch audit screenplay dependencies must share one exact scope")
+        validate_prompt_context_input(args, state, "audit", scope)
+        body, result = load_audit_report(Path(args.input).resolve(), [item["artifact_id"] for item in screenplays], scope, by_id)
+        label = "series" if args.series else f"E{scope['start']:02d}-E{scope['end']:02d}"
+        revision = next_revision(state, "audit")
+        extension = audit_output_extension(state, Path(args.input).resolve())
+        path = versioned_path(f"short-drama/script/{label}", "audit", revision, extension)
+        if result["decision"] == "accepted-with-risk" and not args.risk_authorization:
+            raise ValueError("accepted-with-risk requires independent --risk-authorization")
+        authorization = args.risk_authorization if result["decision"] == "accepted-with-risk" else args.authorization
+        supersede_active(state, assets, "audit", scope)
+        artifact_id = add_artifact(state, "audit", path, body, [item["artifact_id"] for item in screenplays], scope, "confirmed", authorization, audit_result=result, authorization_kind="risk-acceptance" if result["decision"] == "accepted-with-risk" else "approval")
+        files = {path: body, ENGINE_FILE: json_bytes(engine), "project-state.json": json_bytes(state), "asset-manifest.json": json_bytes(assets), "continuity-ledger.json": json_bytes(ledger)}
+        commit(root, files)
+    print(artifact_id)
+
+
+def command_confirm_screenplay(args: argparse.Namespace) -> None:
+    root = Path(args.project_dir).resolve()
+    with project_lock(root):
+        state, assets, ledger, engine = load_project(root)
+        pending = next((item for item in state.get("artifacts", []) if item.get("artifact_id") == args.screenplay and item.get("type") == "screenplay" and item.get("status") == "pending-confirmation"), None)
+        if pending is None:
+            raise ValueError("confirm-screenplay requires a pending-confirmation screenplay artifact")
+        scope = pending.get("scope")
+        context = validate_prompt_context_input(args, state, "audit", scope)
+        audit_source = Path(args.audit_report).resolve()
+        audit_extension = audit_output_extension(state, audit_source)
+        audit_revision = next_revision(state, "audit")
+        label = f"E{scope['start']:02d}-E{scope['end']:02d}" if isinstance(scope, dict) and scope.get("kind") == "episodes" else "series"
+        audit_path = versioned_path(f"short-drama/script/{label}", "audit", audit_revision, audit_extension)
+        audit_document = read_json(audit_source) if audit_source.suffix.lower() == ".json" else None
+        if isinstance(audit_document, dict) and audit_document.get("context_sha256") != context.get("context_sha256"):
+            raise ValueError("audit report context_sha256 does not match audit prompt context")
+        audit_body, result = load_audit_report(audit_source, [pending["artifact_id"]], scope, {item["artifact_id"]: item for item in state["artifacts"]})
+        if result["decision"] not in {"pass", "accepted-with-risk"}:
+            raise ValueError("screenplay confirmation requires pass or accepted-with-risk conformance audit")
+        authorization = args.risk_authorization if result["decision"] == "accepted-with-risk" else args.authorization
+        if result["decision"] == "accepted-with-risk" and not args.risk_authorization:
+            raise ValueError("accepted-with-risk requires independent --risk-authorization")
+        supersede_active(state, assets, "screenplay", scope)
+        pending["status"] = "confirmed"
+        pending["sha256"] = sha256_path(root / pending["path"]) if (root / pending["path"]).is_file() else pending.get("sha256")
+        checkpoint_id = next_id(state["checkpoints"], "checkpoint_id", "CHK")
+        state["checkpoints"].append({
+            "checkpoint_id": checkpoint_id, "stage": "screenplay", "decision": "confirmed",
+            "authorization": args.authorization, "authorization_kind": "approval",
+            "sequence": len(state["checkpoints"]) + 1, "affects": [pending["artifact_id"]],
+        })
+        audit_id = add_artifact(state, "audit", audit_path, audit_body, [pending["artifact_id"]], scope, "confirmed", authorization, audit_result=result, authorization_kind="risk-acceptance" if result["decision"] == "accepted-with-risk" else "approval")
+        files = {audit_path: audit_body, "project-state.json": json_bytes(state), "asset-manifest.json": json_bytes(assets), "continuity-ledger.json": json_bytes(ledger), ENGINE_FILE: json_bytes(engine)}
+        hook = load_hook_ledger(root)
+        canon = load_canon(root)
+        if hook is not None:
+            from hook_ledger import derive_hook_ledger
+            screenplay = read_json(root / pending["path"])
+            next_hook, hook_errors = derive_hook_ledger(hook, screenplay)
+            if hook_errors:
+                raise ValueError("hook ledger derivation failed:\n" + "\n".join(hook_errors))
+            write_canonical_snapshot(state, engine, "hook_ledger", next_hook, [pending["artifact_id"]], files)
+        if canon is not None:
+            from canon import derive_canon_updates
+            screenplay = read_json(root / pending["path"])
+            next_canon = derive_canon_updates(canon, screenplay)
+            write_canonical_snapshot(state, engine, "canon", next_canon, [pending["artifact_id"]], files)
+        files[ENGINE_FILE] = json_bytes(engine)
+        commit(root, files)
+    print(json.dumps({"screenplay": pending["artifact_id"], "audit": audit_id, "status": "confirmed"}, ensure_ascii=False))
+
+
+    root = Path(args.project_dir).resolve()
+    with project_lock(root):
+        state, assets, ledger, engine = load_project(root)
+        by_id = {item["artifact_id"]: item for item in state["artifacts"]}
+        screenplays = [by_id.get(item) for item in args.screenplay]
+        if any(item is None or item.get("type") != "screenplay" or item.get("status") != "confirmed" for item in screenplays):
+            raise ValueError("--screenplay must name confirmed screenplay artifacts")
+        scopes = [item.get("scope") for item in screenplays]
+        scope = {"kind": "series"} if args.series else scopes[0]
+        if not args.series and any(item != scope for item in scopes):
+            raise ValueError("batch audit screenplay dependencies must share one exact scope")
+        validate_prompt_context_input(args, state, "audit", scope)
         audit_source = Path(args.input).resolve()
         audit_extension = audit_output_extension(state, audit_source)
         body, result = load_audit_report(
@@ -1065,6 +1356,10 @@ def command_import_audit(args: argparse.Namespace) -> None:
         audit_authorization = args.risk_authorization if result["decision"] == "accepted-with-risk" else args.authorization
         if result["decision"] == "accepted-with-risk" and not audit_authorization:
             raise ValueError("accepted-with-risk requires independent --risk-authorization")
+        if args.series:
+            supersede_active(state, assets, "audit", {"kind": "series"})
+        else:
+            supersede_active(state, assets, "audit", scope)
         artifact_id = add_artifact(
             state, "audit", path, body, [item["artifact_id"] for item in screenplays], scope,
             "confirmed", audit_authorization, audit_result=result,
@@ -1269,7 +1564,8 @@ def command_import_storyboard(args: argparse.Namespace) -> None:
         scope = scope_from_episodes(raw)
         validate_prompt_context_input(args, state, "storyboard", scope)
         screenplay = next((item for item in find_artifacts(state, "screenplay", "confirmed") if same_scope(item.get("scope"), scope)), None)
-        audit = next((item for item in find_artifacts(state, "audit", "confirmed") if same_scope(item.get("scope"), scope) and screenplay and screenplay["artifact_id"] in item.get("depends_on", []) and item.get("audit_result", {}).get("decision") in {"pass", "accepted-with-risk"}), None)
+        audits = [item for item in find_artifacts(state, "audit", "confirmed") if same_scope(item.get("scope"), scope) and screenplay and screenplay["artifact_id"] in item.get("depends_on", []) and item.get("audit_result", {}).get("decision") in {"pass", "accepted-with-risk"}]
+        audit = max(audits, key=lambda item: item.get("revision", 0), default=None)
         if screenplay is None or audit is None:
             raise ValueError("storyboard requires confirmed screenplay and valid audit for the exact same scope")
         script = read_json(root / screenplay["path"])
@@ -1287,6 +1583,8 @@ def command_import_storyboard(args: argparse.Namespace) -> None:
             "aspectRatio": engine["profile"]["aspect_ratio"],
             "dialogueTag": engine["profile"]["h3"]["dialogue_tag"],
         })
+        data.setdefault("params", {})
+        data["params"]["maxSegmentSeconds"] = float(Decimal(engine["profile"]["h3"]["max_segment_ms"]) / 1000)
         validate_with_node("novel-storyboard", data, [
             *node_context, "--governed",
             "--prompt-lang", engine["profile"]["prompt_language"],
@@ -1423,6 +1721,39 @@ def command_aggregate(args: argparse.Namespace) -> None:
     print(json.dumps({"path": snapshot_path, "projection": "shot-plan.json", "artifact": aggregate_id}, ensure_ascii=False))
 
 
+def derive_previous_handoff(root: Path, state: dict[str, Any], scope: dict[str, Any]) -> dict[str, Any] | None:
+    """Handoff capsule for the screenplay batch immediately before this scope.
+
+    Deterministically derived from the confirmed screenplay artifact, never
+    model-written. Returns None when the scope starts at episode 1 or no
+    confirmed predecessor batch exists.
+    """
+    if not isinstance(scope, dict) or scope.get("kind") != "episodes" or scope.get("start", 1) <= 1:
+        return None
+    predecessor_end = scope["start"] - 1
+    candidates = [
+        item for item in state.get("artifacts", [])
+        if item.get("type") == "screenplay" and item.get("status") == "confirmed"
+        and isinstance(item.get("scope"), dict)
+        and item["scope"].get("kind") == "episodes" and item["scope"].get("end") == predecessor_end
+    ]
+    if not candidates:
+        return None
+    latest = max(candidates, key=lambda item: item.get("revision", 0))
+    script = read_json(safe_relative(root, latest["path"]))
+    episodes = sorted(
+        (item for item in script.get("episodes", []) if isinstance(item, dict) and isinstance(item.get("ep"), int)),
+        key=lambda item: item["ep"],
+    )
+    contract = episodes[-1].get("contract") if episodes else None
+    handoff = contract.get("handoffState") if isinstance(contract, dict) and isinstance(contract.get("handoffState"), dict) else {}
+    return {
+        "source_artifact_id": latest["artifact_id"],
+        "sha256": latest.get("sha256"),
+        "handoff_state": handoff,
+    }
+
+
 def command_prompt_context(args: argparse.Namespace) -> None:
     root = Path(args.project_dir).resolve()
     state, _, _, engine = load_project(root)
@@ -1458,11 +1789,12 @@ def command_prompt_context(args: argparse.Namespace) -> None:
         "delivery_required": configuration.get("delivery_required", False),
     }
     expected_schemas = {
-        "characters": "short-drama-engine.schema.json",
-        "outline": "short-drama-engine.schema.json",
-        "art": "asset-manifest.schema.json",
-        "script": "short-drama-engine.schema.json",
-        "storyboard": "shot-plan.schema.json",
+        "characters": "novel-characters-output",
+        "outline": "novel-outline-output",
+        "art": "novel-art-output",
+        "script": "novel-script-output",
+        "audit": "audit-report.schema.json",
+        "storyboard": "novel-storyboard-output",
     }
     context = {
         "context_version": "2.0",
@@ -1511,6 +1843,40 @@ def command_prompt_context(args: argparse.Namespace) -> None:
             "Return only the expected stage JSON contract before rendering derived reports.",
         ],
     }
+    if args.stage == "audit":
+        context["audit_targets"] = [
+            {"artifact_id": item["artifact_id"], "path": item.get("path"), "sha256": item.get("sha256")}
+            for item in confirmed if item.get("type") == "screenplay"
+        ]
+    if args.stage == "script":
+        context["previous_handoff"] = derive_previous_handoff(root, state, scope)
+        if scope.get("kind") == "episodes" and scope.get("start", 1) > 1 and context["previous_handoff"] is None:
+            raise ValueError("script prompt context requires a confirmed contiguous predecessor")
+        ledger_data = load_hook_ledger(root)
+        context["hook_ledger"] = None if ledger_data is None else {
+            "sha256": sha256_bytes(json_bytes(ledger_data)),
+            "hooks": [
+                {key: hook.get(key) for key in (
+                    "hook_id", "name", "kind", "status", "planted_episode",
+                    "last_advanced_episode", "timing", "target_payoff_episode", "expected_payoff",
+                )}
+                for hook in ledger_data.get("hooks", []) if isinstance(hook, dict)
+            ],
+        }
+        canon_data = load_canon(root)
+        context["canon"] = None if canon_data is None else {
+            "sha256": sha256_bytes(json_bytes(canon_data)),
+            "claims": [
+                {
+                    "claim_id": claim.get("claim_id"), "claim_type": claim.get("claim_type"),
+                    "content": claim.get("content"), "priority": claim.get("authority", {}).get("priority"),
+                    "reader_known_from": claim.get("visibility", {}).get("reader_known_from"),
+                    "status": claim.get("status"), "requires_cost": claim.get("constraints", {}).get("requires_cost", []),
+                    "forbidden_uses": claim.get("constraints", {}).get("forbidden_uses", []),
+                }
+                for claim in canon_data.get("claims", []) if isinstance(claim, dict)
+            ],
+        }
     context["context_sha256"] = sha256_bytes(json_bytes(context))
     print(json.dumps(context, ensure_ascii=False, indent=2))
 
@@ -1542,6 +1908,18 @@ def command_complete(args: argparse.Namespace) -> None:
         ), None)
         if locked_assets is None:
             raise ValueError("complete requires a confirmed locked-assets artifact")
+        hook_ledger = load_hook_ledger(root)
+        if hook_ledger is not None:
+            sys.path.insert(0, str(Path(__file__).resolve().parent))
+            from hook_ledger import completion_debt  # pylint: disable=import-outside-toplevel
+            debt = completion_debt(hook_ledger, engine["profile"]["episode_count"])
+            if debt:
+                listing = "、".join(
+                    f"{item['hook_id']}「{item.get('name', '')}」(E{item.get('planted_episode')})" for item in debt
+                )
+                raise ValueError(
+                    "complete blocked by hook debt planted before the final episode: " + listing
+                )
         state["stage"] = "complete"
         engine["completion"] = {
             "authorization": args.authorization,
@@ -1600,6 +1978,173 @@ def command_recover(args: argparse.Namespace) -> None:
     print("recovered unfinished transaction" if recovered else "no unfinished transaction")
 
 
+def command_script_quality(args: argparse.Namespace) -> None:
+    scripts_dir = Path(__file__).resolve().parent
+    sys.path.insert(0, str(scripts_dir))
+    from script_quality import render_quality_report, run_script_quality  # pylint: disable=import-outside-toplevel
+    raw = read_json(Path(args.input).resolve())
+    previous = [read_json(Path(item).resolve()) for item in (args.previous or [])]
+    canon = read_json(Path(args.canon).resolve()) if args.canon else None
+    issues = run_script_quality(raw, previous, canon=canon)
+    print(render_quality_report(issues))
+    if any(item.get("severity") == "error" for item in issues):
+        raise SystemExit(1)
+
+
+def command_hook_ledger(args: argparse.Namespace) -> None:
+    root = Path(args.project_dir).resolve()
+    ledger = load_hook_ledger(root)
+    scripts_dir = Path(__file__).resolve().parent
+    sys.path.insert(0, str(scripts_dir))
+    from hook_ledger import frontier_episode, hook_health  # pylint: disable=import-outside-toplevel
+    if ledger is None:
+        print(json.dumps({
+            "note": "no hook-ledger.json (seeded at confirmed series outline import)", "hooks": [],
+        }, ensure_ascii=False, indent=2))
+        return
+    if args.action == "health":
+        print(json.dumps({
+            "frontier_episode": frontier_episode(ledger),
+            "hooks": [
+                {
+                    "hook_id": hook.get("hook_id"), "name": hook.get("name"), "status": hook.get("status"),
+                    "planted_episode": hook.get("planted_episode"),
+                    "last_advanced_episode": hook.get("last_advanced_episode"),
+                    "timing": hook.get("timing"), "target_payoff_episode": hook.get("target_payoff_episode"),
+                }
+                for hook in ledger.get("hooks", [])
+            ],
+            "health": hook_health(ledger),
+        }, ensure_ascii=False, indent=2))
+    else:
+        print(json.dumps(ledger, ensure_ascii=False, indent=2))
+
+
+def command_canon(args: argparse.Namespace) -> None:
+    root = Path(args.project_dir).resolve()
+    scripts_dir = Path(__file__).resolve().parent
+    sys.path.insert(0, str(scripts_dir))
+    if args.action == "list":
+        canon = load_canon(root)
+        print(json.dumps(
+            canon if canon is not None else {"note": "no canon.json (register first)", "claims": [], "candidates": []},
+            ensure_ascii=False, indent=2,
+        ))
+        return
+    if not args.authorization:
+        raise ValueError(f"canon {args.action} requires --authorization")
+    with project_lock(root):
+        state, assets, ledger, engine = load_project(root)
+        canon = load_canon(root)
+        files: dict[str, bytes] = {}
+        from canon import merge_registered_canon, refresh_canon  # pylint: disable=import-outside-toplevel
+        register_artifact_id: str | None = None
+        if args.action == "register":
+            if not args.input:
+                raise ValueError("canon register requires --input")
+            from schema_validator import validate_file  # pylint: disable=import-outside-toplevel
+            incoming = read_json(Path(args.input).resolve())
+            schema_errors = validate_file(incoming, ROOT / "schemas" / "canon.schema.json", "canon")
+            if schema_errors:
+                raise ValueError("invalid canon document:\n" + "\n".join(f"- {item}" for item in schema_errors))
+            if incoming.get("project_id") != state["project"]["project_id"]:
+                raise ValueError("canon project_id does not match project")
+            base = canon if canon is not None else {
+                "schema_version": "1.0", "project_id": state["project"]["project_id"],
+                "canon_version": 0, "claims": [], "candidates": [],
+            }
+            next_canon, errors = merge_registered_canon(base, incoming)
+            if errors:
+                raise ValueError("canon register failed:\n" + "\n".join(f"- {item}" for item in errors))
+            register_revision = next_revision(state, "canon-register")
+            register_path = versioned_path("short-drama/governance", "canon-register", register_revision, "json")
+            register_artifact_id = add_artifact(
+                state, "canon-register", register_path, json_bytes(incoming), [], {"kind": "series"}, "confirmed", None,
+            )
+            files[register_path] = json_bytes(incoming)
+        else:
+            if canon is None:
+                raise ValueError("no canon.json to refresh")
+            next_canon = refresh_canon(canon)
+        depends_on = [register_artifact_id] if register_artifact_id else []
+        files["project-state.json"] = json_bytes(state)
+        files["asset-manifest.json"] = json_bytes(assets)
+        files["continuity-ledger.json"] = json_bytes(ledger)
+        files[ENGINE_FILE] = json_bytes(engine)
+        write_canonical_snapshot(state, engine, "canon", next_canon, depends_on, files)
+        files[ENGINE_FILE] = json_bytes(engine)
+        commit(root, files)
+    print(json.dumps({
+        "canon_version": next_canon["canon_version"],
+        "claims": len(next_canon["claims"]), "candidates": len(next_canon["candidates"]),
+    }, ensure_ascii=False))
+
+
+def command_rebuild_governance(args: argparse.Namespace) -> None:
+    root = Path(args.project_dir).resolve()
+    with project_lock(root):
+        state, assets, ledger, engine = load_project(root)
+        files: dict[str, bytes] = {}
+        if args.hook:
+            outline = latest_artifact(state, "series-outline", "confirmed")
+            if outline is None:
+                raise ValueError("rebuilding hook ledger requires a confirmed series outline")
+            sys.path.insert(0, str(Path(__file__).resolve().parent))
+            from hook_ledger import seed_hook_ledger, derive_hook_ledger  # pylint: disable=import-outside-toplevel
+            outline_data = read_json(root / outline["path"])
+            hook = seed_hook_ledger(outline_data, state["project"]["project_id"], engine["profile"]["episode_count"])
+            screenplays = sorted(
+                (item for item in find_artifacts(state, "screenplay", "confirmed")
+                 if isinstance(item.get("scope"), dict) and item["scope"].get("kind") == "episodes"),
+                key=lambda item: item["scope"]["start"],
+            )
+            for screenplay in screenplays:
+                script = read_json(root / screenplay["path"])
+                hook, hook_errors = derive_hook_ledger(hook, script)
+                if hook_errors:
+                    raise ValueError(f"hook rebuild failed for {screenplay['artifact_id']}: " + "; ".join(hook_errors))
+            write_canonical_snapshot(state, engine, "hook_ledger", hook, [outline["artifact_id"]], files)
+        if args.canon:
+            canon = load_canon(root)
+            if canon is None:
+                raise ValueError("rebuilding canon requires an existing canon.json projection")
+            write_canonical_snapshot(state, engine, "canon", canon, [], files)
+        if not files:
+            raise ValueError("rebuild-governance requires --hook and/or --canon")
+        files.setdefault(ENGINE_FILE, json_bytes(engine))
+        files.setdefault("asset-manifest.json", json_bytes(assets))
+        files.setdefault("continuity-ledger.json", json_bytes(ledger))
+        commit(root, files)
+    print(json.dumps({"rebuilt": [key for key in ("hook", "canon") if getattr(args, key)]}, ensure_ascii=False))
+
+
+def command_import_delivery(args: argparse.Namespace) -> None:
+    root = Path(args.project_dir).resolve()
+    with project_lock(root):
+        state, assets, ledger, engine = load_project(root)
+        raw = read_json(Path(args.input).resolve())
+        scripts_dir = Path(__file__).resolve().parent
+        sys.path.insert(0, str(scripts_dir))
+        from schema_validator import validate_file  # pylint: disable=import-outside-toplevel
+        schema_errors = validate_file(raw, ROOT / "schemas" / "delivery-manifest.schema.json", "delivery-manifest")
+        if schema_errors:
+            raise ValueError("invalid delivery manifest:\n" + "\n".join(f"- {item}" for item in schema_errors))
+        if raw.get("project_id") != state["project"]["project_id"]:
+            raise ValueError("delivery manifest project_id does not match project-state")
+        scope = raw.get("scope")
+        supersede_active(state, assets, "delivery-manifest", scope)
+        revision = next_revision(state, "delivery-manifest")
+        path = versioned_path("short-drama/delivery", "delivery-manifest", revision, "json")
+        body = json_bytes(raw)
+        artifact_id = add_artifact(state, "delivery-manifest", path, body, [], scope, "confirmed", args.authorization)
+        files = {
+            path: body, ENGINE_FILE: json_bytes(engine), "project-state.json": json_bytes(state),
+            "asset-manifest.json": json_bytes(assets), "continuity-ledger.json": json_bytes(ledger),
+        }
+        commit(root, files)
+    print(json.dumps({"delivery_manifest": artifact_id, "scope": scope}, ensure_ascii=False))
+
+
 def add_common_import(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--project-dir", required=True)
     parser.add_argument("--input", required=True)
@@ -1630,23 +2175,31 @@ def main() -> int:
     art = sub.add_parser("import-art"); add_common_import(art)
     script = sub.add_parser("import-script"); add_common_import(script); script.add_argument("--confirm", action="store_true"); script.add_argument("--authorization")
     script.add_argument("--audit-report"); script.add_argument("--risk-authorization")
+    confirm = sub.add_parser("confirm-screenplay"); confirm.add_argument("--project-dir", required=True); confirm.add_argument("--screenplay", required=True); confirm.add_argument("--audit-report", required=True); confirm.add_argument("--prompt-context", required=True); confirm.add_argument("--authorization", required=True); confirm.add_argument("--risk-authorization")
     audit = sub.add_parser("import-audit"); add_common_import(audit); audit.add_argument("--screenplay", action="append", required=True); audit.add_argument("--series", action="store_true"); audit.add_argument("--authorization", required=True); audit.add_argument("--risk-authorization")
     storyboard = sub.add_parser("import-storyboard"); add_common_import(storyboard); storyboard.add_argument("--authorization", required=True)
     aggregate = sub.add_parser("aggregate-shot-plan"); aggregate.add_argument("--project-dir", required=True); aggregate.add_argument("--authorization", required=True)
-    prompt = sub.add_parser("prompt-context"); prompt.add_argument("--project-dir", required=True); prompt.add_argument("--stage", choices=["characters", "outline", "art", "script", "storyboard"], required=True); prompt.add_argument("--scope", default="series")
+    prompt = sub.add_parser("prompt-context"); prompt.add_argument("--project-dir", required=True); prompt.add_argument("--stage", choices=["characters", "outline", "art", "script", "audit", "storyboard"], required=True); prompt.add_argument("--scope", default="series")
     complete = sub.add_parser("complete"); complete.add_argument("--project-dir", required=True); complete.add_argument("--authorization", required=True)
     validate = sub.add_parser("validate"); validate.add_argument("--project-dir", required=True)
     recover = sub.add_parser("recover"); recover.add_argument("--project-dir", required=True)
+    quality = sub.add_parser("script-quality"); quality.add_argument("--input", required=True); quality.add_argument("--previous", action="append", default=[]); quality.add_argument("--canon")
+    hookledger = sub.add_parser("hook-ledger"); hookledger.add_argument("--project-dir", required=True); hookledger.add_argument("action", choices=["status", "health"])
+    canonp = sub.add_parser("canon"); canonp.add_argument("--project-dir", required=True); canonp.add_argument("action", choices=["list", "register", "refresh"]); canonp.add_argument("--input"); canonp.add_argument("--authorization")
+    rebuild = sub.add_parser("rebuild-governance"); rebuild.add_argument("--project-dir", required=True); rebuild.add_argument("--hook", action="store_true"); rebuild.add_argument("--canon", action="store_true")
+    delivery = sub.add_parser("import-delivery"); delivery.add_argument("--project-dir", required=True); delivery.add_argument("--input", required=True); delivery.add_argument("--authorization", required=True)
     args = parser.parse_args()
     if getattr(args, "confirm", False) and not getattr(args, "authorization", None):
         parser.error("--confirm requires --authorization")
     commands: dict[str, Callable[[argparse.Namespace], None]] = {
         "attach": command_attach, "status": command_status, "import-cast": command_import_cast,
         "import-outline": command_import_outline, "import-art": command_import_art,
-        "import-script": command_import_script, "import-audit": command_import_audit,
+        "import-script": command_import_script, "import-audit": command_import_audit, "confirm-screenplay": command_confirm_screenplay,
         "import-storyboard": command_import_storyboard, "aggregate-shot-plan": command_aggregate,
         "prompt-context": command_prompt_context, "complete": command_complete,
-        "validate": command_validate, "recover": command_recover,
+        "validate": command_validate, "recover": command_recover, "script-quality": command_script_quality,
+        "hook-ledger": command_hook_ledger, "canon": command_canon, "rebuild-governance": command_rebuild_governance,
+        "import-delivery": command_import_delivery,
     }
     commands[args.command](args)
     return 0

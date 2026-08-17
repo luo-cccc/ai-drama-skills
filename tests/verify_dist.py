@@ -29,6 +29,15 @@ def digest(path: Path) -> str:
     return value.hexdigest()
 
 
+def packaged_files(dist: Path):
+    """Package files, ignoring interpreter caches left by in-place runs."""
+    for path in sorted(dist.rglob("*")):
+        if "__pycache__" in path.parts:
+            continue
+        if path.is_file():
+            yield path
+
+
 def run_help(script: Path, cwd: Path) -> list[str]:
     environment = os.environ.copy()
     environment.pop("PYTHONPATH", None)
@@ -95,8 +104,8 @@ def verify(dist: Path) -> list[str]:
     expected = manifest.get("files", {})
     actual = {
         path.relative_to(dist).as_posix(): digest(path)
-        for path in sorted(dist.rglob("*"))
-        if path.is_file() and path != manifest_path
+        for path in packaged_files(dist)
+        if path != manifest_path
     }
     if expected != actual:
         missing = sorted(set(expected) - set(actual))
@@ -110,8 +119,7 @@ def verify(dist: Path) -> list[str]:
             errors.append(f"package manifest hash mismatches: {changed}")
     before_help = {
         path.relative_to(dist).as_posix(): digest(path)
-        for path in sorted(dist.rglob("*"))
-        if path.is_file()
+        for path in packaged_files(dist)
     }
     with tempfile.TemporaryDirectory() as temporary:
         outside = Path(temporary)
@@ -134,8 +142,7 @@ def verify(dist: Path) -> list[str]:
                 errors.extend(run_help(scripts / "short_drama_cli.py", outside))
     after_help = {
         path.relative_to(dist).as_posix(): digest(path)
-        for path in sorted(dist.rglob("*"))
-        if path.is_file()
+        for path in packaged_files(dist)
     }
     if after_help != before_help:
         errors.append("isolated runtime checks modified the packaged tree")

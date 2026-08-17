@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.ai-drama-forging/schemas/canon.schema.json",
+  "title": "AI Drama Forging Canon",
+  "type": "object",
+  "required": ["schema_version", "project_id", "canon_version", "claims", "candidates"],
+  "properties": {
+    "schema_version": {"enum": ["1.0"]},
+    "project_id": {"type": "string", "pattern": "^PROJECT-[0-9]{3}$"},
+    "canon_version": {"type": "integer", "minimum": 1},
+    "claims": {"type": "array", "items": {"$ref": "#/$defs/claim"}},
+    "candidates": {"type": "array", "items": {"$ref": "#/$defs/candidate"}}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "stringArray": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "claim": {
+      "type": "object",
+      "required": [
+        "claim_id", "domain", "claim_type", "content", "scope",
+        "authority", "visibility", "relations", "constraints", "status", "evidence"
+      ],
+      "properties": {
+        "claim_id": {"type": "string", "pattern": "^CAN-[0-9]{3}$"},
+        "domain": {"enum": ["world", "protagonist", "character", "organization", "power", "relationship", "history", "style"]},
+        "claim_type": {
+          "enum": [
+            "objective_rule", "institution_rule", "character_exception", "belief",
+            "rumor", "secret_truth", "temporary_state", "prohibition"
+          ]
+        },
+        "content": {"type": "string", "minLength": 1},
+        "scope": {
+          "type": "object",
+          "required": ["applies_to", "excludes"],
+          "properties": {
+            "applies_to": {"$ref": "#/$defs/stringArray"},
+            "excludes": {"$ref": "#/$defs/stringArray"}
+          },
+          "additionalProperties": false
+        },
+        "authority": {
+          "type": "object",
+          "required": ["source", "priority"],
+          "properties": {
+            "source": {"type": "string", "minLength": 1},
+            "priority": {"enum": ["hard", "strong", "soft"]}
+          },
+          "additionalProperties": false
+        },
+        "visibility": {
+          "type": "object",
+          "required": ["reader_known_from", "character_known_by", "hidden_from"],
+          "properties": {
+            "reader_known_from": {"type": ["integer", "null"], "minimum": 1},
+            "character_known_by": {"$ref": "#/$defs/stringArray"},
+            "hidden_from": {"$ref": "#/$defs/stringArray"}
+          },
+          "additionalProperties": false
+        },
+        "relations": {
+          "type": "object",
+          "required": ["conflicts_with", "resolves_by", "depends_on"],
+          "properties": {
+            "conflicts_with": {"$ref": "#/$defs/stringArray"},
+            "resolves_by": {"type": ["string", "null"], "minLength": 1},
+            "depends_on": {"$ref": "#/$defs/stringArray"}
+          },
+          "additionalProperties": false
+        },
+        "constraints": {
+          "type": "object",
+          "required": ["non_generalizable", "requires_cost", "forbidden_uses"],
+          "properties": {
+            "non_generalizable": {"type": "boolean"},
+            "requires_cost": {"$ref": "#/$defs/stringArray"},
+            "forbidden_uses": {"$ref": "#/$defs/stringArray"}
+          },
+          "additionalProperties": false
+        },
+        "status": {"enum": ["active", "resolved", "superseded"]},
+        "status_updated_at_episode": {"type": ["integer", "null"], "minimum": 1},
+        "evidence": {"$ref": "#/$defs/stringArray"}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"claim_type": {"enum": ["objective_rule", "institution_rule", "prohibition"]}},
+            "required": ["claim_type"]
+          },
+          "then": {"properties": {"status": {"enum": ["active", "superseded"]}}}
+        }
+      ],
+      "additionalProperties": false
+    },
+    "candidate": {
+      "type": "object",
+      "required": ["fact", "source_episode"],
+      "properties": {
+        "fact": {"type": "string", "minLength": 1},
+        "source_episode": {"type": "integer", "minimum": 1}
+      },
+      "additionalProperties": false
+    }
+  }
+}

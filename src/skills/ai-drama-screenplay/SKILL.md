@@ -26,6 +26,7 @@ description: 将成熟故事、剧情大纲或已确认开发方案转化为媒�
 - 判断媒介形态或生成提示包时，读取 [form-and-brief.md](references/form-and-brief.md)。
 - 生成、修订或校验分场和正文时，读取 [outline-and-screenplay.md](references/outline-and-screenplay.md)。
 - 进入项目模式时读取 [workflow-contract.md](references/workflow-contract.md)；写正式正文时读取 [screenplay-format.md](references/screenplay-format.md)。
+- 涉及对白工艺、场景工作卡、反转与情绪钩子时读取 [episode-drama-contract.md](references/episode-drama-contract.md)；其中的单集合同字段用于短剧管线，写作纪律对所有形态通用。
 - 涉及第三方素材时读取 [originality-safety.md](references/originality-safety.md)；设计可见表演时按需读取 [performance-camera.md](references/performance-camera.md)。
 
 ## 验证输入

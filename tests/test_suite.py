@@ -47,7 +47,7 @@ class SkillSuiteTests(unittest.TestCase):
             self.assertRegex(text, rf"\A---\nname: {re.escape(entry['name'])}\n")
             yaml = (skill_dir / "agents" / "openai.yaml").read_text(encoding="utf-8")
             self.assertIn(f"${entry['name']}", yaml)
-            expected_policy = "false" if entry["name"].startswith("ai-drama-short-drama-") or entry["name"] == "ai-drama-screenplay" else "true"
+            expected_policy = "false" if entry["name"].startswith("ai-drama-short-drama-") else "true"
             self.assertIn(f"allow_implicit_invocation: {expected_policy}", yaml)
             display_match = re.search(r'display_name: "([^"]+)"', yaml)
             self.assertIsNotNone(display_match)
@@ -645,6 +645,9 @@ class SkillSuiteTests(unittest.TestCase):
                 "--kind", "series", "--confirm", "--authorization", "fixture series approval",
                 "--prompt-context", prompt_context("outline"),
             )
+            hook_ledger = json.loads((project / "hook-ledger.json").read_text(encoding="utf-8"))
+            self.assertEqual(2, len(hook_ledger["hooks"]))
+            self.assertEqual([3, 5], sorted(hook["target_payoff_episode"] for hook in hook_ledger["hooks"]))
             run_short(
                 "import-art", "--project-dir", str(project),
                 "--input", str(engine_root / "novel-art" / "examples" / "渡口-art.json"),
@@ -652,6 +655,37 @@ class SkillSuiteTests(unittest.TestCase):
             )
             script = json.loads((engine_root / "novel-script" / "examples" / "渡口-script.json").read_text(encoding="utf-8"))
             script["episodes"] = script["episodes"][:1]
+            script["episodes"][0]["scenes"][0]["flow"][0]["action"] += " 皮箱的秘密"
+            script["episodes"][0]["contract"] = {
+                "incomingState": {
+                    "knowledge": ["沈知微带着旧皮箱登上渡船"], "power": ["渡船行程由周家掌控"],
+                    "relationship": ["沈知微与船主彼此试探"], "physical": ["旧皮箱由沈知微随身携带"],
+                    "activeAction": ["渡船正驶向下游码头"], "emotional": [],
+                },
+                "objective": {"character": "沈知微", "desiredChange": "守住皮箱、不让任何人开箱", "whyNow": "船上已经有人盯上了箱子"},
+                "opposition": {"actorOrConstraint": "周泊如", "goal": "弄清箱子里装的是什么", "leverage": "整船都在他的地盘上"},
+                "causalEscalation": [{
+                    "becauseOf": "箱锁有被人动过的痕迹",
+                    "choice": "沈知微当众把箱子重新锁进舱里",
+                    "countermove": "周泊如借查票把话头引向箱子",
+                    "stateChange": "全船都确认箱子里有不可见人的东西",
+                    "nextPressure": "下船之前必有一方先动手",
+                }],
+                "localDramaticResult": {"goalOutcome": "箱子守住了，但秘密不再是秘密", "stateChange": "箱子从私人物件变成公开目标", "costPaid": "沈知微失去了暗度陈仓的余地"},
+                "outgoingPressure": {"startedDecisionDangerOrQuestion": "周泊如会趁夜开箱吗", "whyItFollows": "本集让全船确认了箱子的价值"},
+                "handoffState": {
+                    "knowledge": ["全船都知道箱里有秘密"], "power": ["周泊如仍掌控渡船的行程"],
+                    "relationship": ["沈知微与周泊如从试探变成对赌"], "physical": ["箱子锁在舱内，钥匙在沈知微身上"],
+                    "activeAction": ["周泊如盘算夜里的动作"], "emotional": ["沈知微选择赌周泊如不敢明抢"],
+                },
+                "informationPermissions": [{
+                    "subject": "箱中内容", "audience": "观众",
+                    "known": ["箱子里是能翻案的旧物"], "suspected": [], "mistaken": [], "unknown": [],
+                }],
+                "emotionalHook": "箱子里到底藏着谁的秘密？",
+                "endState": "箱子从私人物件变成全船的赌注",
+                "hookActions": [],
+            }
             batch = project / "batch-e01.json"
             write_json(batch, script)
             before_rejected_import = tree_hashes(project)
@@ -662,6 +696,48 @@ class SkillSuiteTests(unittest.TestCase):
             ], capture_output=True, text=True)
             self.assertNotEqual(0, rejected.returncode)
             self.assertEqual(before_rejected_import, tree_hashes(project))
+            no_contract = copy.deepcopy(script)
+            del no_contract["episodes"][0]["contract"]
+            no_contract_batch = project / "batch-no-contract.json"
+            write_json(no_contract_batch, no_contract)
+            rejected_contract = subprocess.run([
+                sys.executable, str(SCRIPTS / "short_drama_cli.py"), "import-script",
+                "--project-dir", str(project), "--input", str(no_contract_batch),
+                "--prompt-context", prompt_context("script", "1-1"),
+            ], capture_output=True, text=True)
+            self.assertNotEqual(0, rejected_contract.returncode)
+            self.assertIn("contract", rejected_contract.stdout + rejected_contract.stderr)
+            canon_document = {
+                "schema_version": "1.0",
+                "project_id": json.loads((project / "project-state.json").read_text(encoding="utf-8"))["project"]["project_id"],
+                "canon_version": 1,
+                "claims": [{
+                    "claim_id": "CAN-001", "domain": "world", "claim_type": "temporary_state",
+                    "content": "皮箱的秘密",
+                    "scope": {"applies_to": [], "excludes": []},
+                    "authority": {"source": "fixture", "priority": "soft"},
+                    "visibility": {"reader_known_from": 1, "character_known_by": [], "hidden_from": []},
+                    "relations": {"conflicts_with": [], "resolves_by": None, "depends_on": []},
+                    "constraints": {"non_generalizable": False, "requires_cost": [], "forbidden_uses": []},
+                    "status": "active", "status_updated_at_episode": None, "evidence": [],
+                }, {
+                    "claim_id": "CAN-002", "domain": "world", "claim_type": "secret_truth",
+                    "content": "县衙的密信",
+                    "scope": {"applies_to": [], "excludes": []},
+                    "authority": {"source": "fixture", "priority": "soft"},
+                    "visibility": {"reader_known_from": 1, "character_known_by": [], "hidden_from": []},
+                    "relations": {"conflicts_with": [], "resolves_by": None, "depends_on": []},
+                    "constraints": {"non_generalizable": False, "requires_cost": [], "forbidden_uses": []},
+                    "status": "active", "status_updated_at_episode": None, "evidence": [],
+                }],
+                "candidates": [],
+            }
+            canon_incoming = project.parent / "canon-register.json"
+            write_json(canon_incoming, canon_document)
+            run_short(
+                "canon", "--project-dir", str(project), "register",
+                "--input", str(canon_incoming), "--authorization", "fixture canon approval",
+            )
             audit_report = project / "audit-e01.json"
             state_before_script = json.loads((project / "project-state.json").read_text(encoding="utf-8"))
             candidate_id = short_drama.next_id(state_before_script["artifacts"], "artifact_id", "ART")
@@ -679,11 +755,14 @@ class SkillSuiteTests(unittest.TestCase):
                 }],
                 scope={"kind": "episodes", "start": 1, "end": 1},
             )
-            run_short(
+            import_result = run_short(
                 "import-script", "--project-dir", str(project), "--input", str(batch),
                 "--confirm", "--authorization", "fixture screenplay approval",
                 "--audit-report", str(audit_report), "--prompt-context", prompt_context("script", "1-1"),
             )
+            import_warnings = json.loads(import_result.stdout)["warnings"]
+            self.assertEqual(1, len(import_warnings))
+            self.assertTrue(any("CAN-002" in warning for warning in import_warnings))
             storyboard = json.loads((engine_root / "novel-storyboard" / "examples" / "渡口-storyboard.json").read_text(encoding="utf-8"))
             storyboard["episodes"][0]["segments"][-1]["cuts"][-1]["seconds"] += 1
             storyboard_path = project / "storyboard-e01.json"
@@ -694,6 +773,25 @@ class SkillSuiteTests(unittest.TestCase):
             )
             run_short("validate", "--project-dir", str(project))
             state = json.loads((project / "project-state.json").read_text(encoding="utf-8"))
+            context_script = json.loads((project / "context-script-1_1.json").read_text(encoding="utf-8"))
+            self.assertIsNone(context_script["previous_handoff"])
+            self.assertEqual(2, len(context_script["hook_ledger"]["hooks"]))
+            self.assertEqual(2, len(context_script["canon"]["claims"]))
+            hook_ledger_after = json.loads((project / "hook-ledger.json").read_text(encoding="utf-8"))
+            self.assertEqual(2, hook_ledger_after["ledger_version"])
+            self.assertTrue(all(hook["status"] == "open" for hook in hook_ledger_after["hooks"]))
+            canon_after = json.loads((project / "canon.json").read_text(encoding="utf-8"))
+            self.assertEqual(2, canon_after["canon_version"])
+            self.assertEqual("resolved", canon_after["claims"][0]["status"])
+            self.assertEqual(1, canon_after["claims"][0]["status_updated_at_episode"])
+            self.assertEqual("active", canon_after["claims"][1]["status"])
+            self.assertEqual([{"fact": "全船都知道箱里有秘密", "source_episode": 1}], canon_after["candidates"])
+            screenplay_artifact = next(
+                item for item in state["artifacts"]
+                if item.get("type") == "screenplay" and item.get("status") == "confirmed"
+            )
+            stored_script = json.loads((project / screenplay_artifact["path"]).read_text(encoding="utf-8"))
+            self.assertEqual(script["episodes"][0]["contract"], stored_script["episodes"][0]["contract"])
             canonical_audit = next(
                 item for item in state["artifacts"]
                 if item.get("type") == "audit" and item.get("scope") == {"kind": "episodes", "start": 1, "end": 1}

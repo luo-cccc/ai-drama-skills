@@ -34,7 +34,15 @@ series delivery manifest 汇总真实媒体、storyboard images、generation gro
 - 没有 known gaps；
 - 文件存在且 hash 匹配。
 
-`delivery_required=true` 的项目只能在 confirmed complete series delivery manifest 存在时进入 complete。
+`delivery_required=true` 的项目只能在 confirmed complete series delivery manifest 存在时进入 complete。短剧项目通过显式入口登记并确认交付清单：
+
+```bash
+python scripts/short_drama_cli.py import-delivery \
+  --project-dir <PROJECT> --input delivery-manifest.json \
+  --authorization "delivery approval"
+```
+
+`import-delivery` 会校验 schema 与 project/scope、supersede 同 scope 旧清单、登记 `delivery-manifest` artifact 与 owning-stage checkpoint。
 
 ## 媒体证据边界
 

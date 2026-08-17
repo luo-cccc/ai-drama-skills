@@ -43,6 +43,16 @@ CONFIRMATION_STAGE_BY_TYPE = {
     "series-outline": "outline",
     "scene-outline": "outline",
     "screenplay": "screenplay",
+    "audit": "audit",
+    "shot-plan": "shots",
+    "storyboard": "shots",
+    "short-drama-storyboard": "shots",
+    "h3-export": "shots",
+    "locked-assets": "assets",
+    "asset-report": "assets",
+    "generation-manifest": "shots",
+    "delivery-manifest": "shots",
+    "visual-delivery": "assets",
 }
 ARTIFACT_STAGE_BY_TYPE = {
     **CONFIRMATION_STAGE_BY_TYPE,
@@ -70,6 +80,9 @@ FORMAL_DOWNSTREAM_TYPES = {
     "storyboard-detail",
     "locked-assets",
     "asset-report",
+    "generation-manifest",
+    "delivery-manifest",
+    "visual-delivery",
 }
 PROJECT_SINGLETON_TYPES = {"production-brief", "outline-skeleton", "series-outline", "scene-outline"}
 RANGED_TYPES = {"screenplay", "audit", "storyboard", "short-drama-storyboard", "shot-plan", "h3-export"}
@@ -86,6 +99,9 @@ ARTIFACT_SCHEMA_BY_TYPE = {
     "generation-manifest": "generation-manifest.schema.json",
     "delivery-manifest": "delivery-manifest.schema.json",
     "visual-delivery": "visual-delivery.schema.json",
+    "hook-ledger": "hook-ledger.schema.json",
+    "canon": "canon.schema.json",
+    "canon-register": "canon.schema.json",
 }
 
 
@@ -741,6 +757,8 @@ def validate_state(
             confirmed_by_type.setdefault(artifact["type"], set()).add(artifact_id)
 
     for artifact_type, stage in CONFIRMATION_STAGE_BY_TYPE.items():
+        if legacy and artifact_type not in {"production-brief", "outline-skeleton", "series-outline", "scene-outline", "screenplay"}:
+            continue
         current = confirmed_by_type.get(artifact_type, set())
         if artifact_type in PROJECT_SINGLETON_TYPES and len(current) > 1:
             errors.append(f"multiple confirmed {artifact_type} revisions: {sorted(current)}")
@@ -801,9 +819,18 @@ def validate_state(
             continue
         decision = result.get("decision")
         if decision == "pass":
-            valid_audits.add(audit_id)
+            if not legacy and not is_effectively_approved(audit_id, "audit"):
+                errors.append(f"audit {audit_id} lacks an effective approving audit checkpoint")
+            else:
+                valid_audits.add(audit_id)
         elif decision == "accepted-with-risk":
-            if is_effectively_approved(audit_id, "audit"):
+            if not legacy and is_effectively_approved(audit_id, "audit"):
+                checkpoint = effective_checkpoints.get(audit_id, {})
+                if checkpoint.get("authorization_kind") != "risk-acceptance":
+                    errors.append(f"audit {audit_id} accepted-with-risk requires risk-acceptance authorization")
+                else:
+                    valid_audits.add(audit_id)
+            elif legacy:
                 valid_audits.add(audit_id)
             else:
                 errors.append(f"audit {audit_id} accepted-with-risk lacks an effective approving audit checkpoint")
@@ -1245,6 +1272,11 @@ def validate_shots(
 def validate_generation_manifests(
     root: Path, artifacts: list[dict[str, Any]], errors: list[str]
 ) -> None:
+    state_probe = read_json(root / "project-state.json", [])
+    if not isinstance(state_probe, dict):
+        state_probe = {}
+    project_id = state_probe.get("project", {}).get("project_id") if isinstance(state_probe.get("project"), dict) else None
+    configuration = state_probe.get("configuration", {}) if isinstance(state_probe.get("configuration"), dict) else {}
     by_id = {
         item.get("artifact_id"): item for item in artifacts
         if isinstance(item, dict) and isinstance(item.get("artifact_id"), str)
@@ -1259,6 +1291,14 @@ def validate_generation_manifests(
         manifest = read_json(manifest_path, errors)
         if not manifest:
             continue
+        if project_id is not None and manifest.get("project_id") != project_id:
+            errors.append(f"{label} project_id does not match project-state")
+        if artifact.get("scope") is not None and manifest.get("scope") != artifact.get("scope"):
+            errors.append(f"{label} scope does not match registered artifact scope")
+        profile = configuration
+        generator = manifest.get("generator") if isinstance(manifest.get("generator"), dict) else {}
+        if generator.get("name") != profile.get("generator") and profile.get("generator") not in {None, "", "unspecified", "minimax-h3"}:
+            errors.append(f"{label} generator does not match project configuration")
         groups = manifest.get("groups")
         if not isinstance(groups, list):
             continue
@@ -1339,16 +1379,31 @@ def validate_media_manifests(root: Path, artifacts: list[dict[str, Any]], errors
         data = read_json(path, errors)
         if not data:
             continue
+        state_project_id = None
+        try:
+            state_probe = read_json(root / "project-state.json", [])
+            state_project_id = state_probe.get("project", {}).get("project_id")
+        except Exception:
+            pass
         rows: list[dict[str, Any]] = []
         if artifact_type == "delivery-manifest":
+            if state_project_id is not None and data.get("project_id") != state_project_id:
+                errors.append(f"{label} project_id does not match project-state")
+            if artifact.get("scope") is not None and data.get("scope") != artifact.get("scope"):
+                errors.append(f"{label} scope does not match registered artifact scope")
             rows.extend(item for item in data.get("artifacts", []) if isinstance(item, dict))
             rows.extend(item for item in data.get("storyboard_images", []) if isinstance(item, dict))
             if data.get("status") == "complete":
+                if not data.get("artifacts") or not data.get("storyboard_images"):
+                    errors.append(f"{label} complete status requires delivered artifacts and storyboard images")
                 for item in data.get("artifacts", []):
                     if isinstance(item, dict) and (
                         item.get("status") != "delivered" or item.get("qc_status") not in {"pass", "not-applicable"}
                     ):
                         errors.append(f"{label} complete status includes an undelivered or failed-QC artifact")
+                for item in data.get("storyboard_images", []):
+                    if isinstance(item, dict) and item.get("qc_status") != "pass":
+                        errors.append(f"{label} complete status includes a failed-QC storyboard image")
                 if data.get("known_gaps"):
                     errors.append(f"{label} complete status cannot contain known gaps")
         else:
@@ -1496,6 +1551,19 @@ def validate_short_drama_engine(
             errors.append(f"short-drama-engine storyboard mapping beat does not match shot {shot_id}")
         if row.get("generation_group") != shot.get("generation_group"):
             errors.append(f"short-drama-engine storyboard mapping generation_group does not match shot {shot_id}")
+    aggregate_record = engine.get("aggregate")
+    if isinstance(aggregate_record, dict) and aggregate_record.get("projection_path") == "shot-plan.json":
+        projection_path = root / "shot-plan.json"
+        if not projection_path.is_file():
+            errors.append("short-drama-engine aggregate references missing shot-plan.json projection")
+        else:
+            try:
+                projection_hash = hash_file(projection_path)
+            except OSError as exc:
+                errors.append(f"short-drama-engine aggregate projection cannot be read: {exc}")
+            else:
+                if aggregate_record.get("sha256") != projection_hash:
+                    errors.append("short-drama-engine aggregate projection does not match the immutable snapshot")
     return engine
 
 
@@ -1602,6 +1670,268 @@ def validate_short_drama_completion(
         errors.append(f"complete short-drama project has unlocked required assets: {missing}")
 
 
+def validate_canonical_ref(
+    root: Path, state: dict[str, Any], errors: list[str], key: str, ref: dict[str, Any], projection_name: str,
+) -> None:
+    """Verify an engine canonical_state ref against its snapshot artifact and projection."""
+    artifacts = {
+        item.get("artifact_id"): item for item in state.get("artifacts", [])
+        if isinstance(item, dict) and isinstance(item.get("artifact_id"), str)
+    }
+    artifact_id = ref.get("artifact_id")
+    artifact = artifacts.get(artifact_id)
+    if artifact is None or artifact.get("type") != key or artifact.get("status") != "confirmed":
+        errors.append(f"{key} canonical_state references an unknown or unconfirmed snapshot artifact")
+        return
+    projection_path = root / projection_name
+    projection_hash = hash_file(projection_path) if projection_path.is_file() else None
+    snapshot_path = ref.get("snapshot_path")
+    snapshot_hash = None
+    if isinstance(snapshot_path, str):
+        snapshot_file = root / snapshot_path
+        snapshot_hash = hash_file(snapshot_file) if snapshot_file.is_file() else None
+        if artifact.get("path") != snapshot_path:
+            errors.append(f"{key} snapshot artifact path does not match canonical_state")
+    if ref.get("projection_path") != projection_name:
+        errors.append(f"{key} canonical_state projection_path is invalid")
+    if ref.get("sha256") != projection_hash or (snapshot_path is not None and ref.get("sha256") != snapshot_hash):
+        errors.append(f"{key} canonical_state sha256 does not match projection or snapshot")
+    if ref.get("sha256") != artifact.get("sha256"):
+        errors.append(f"{key} canonical_state sha256 does not match snapshot artifact")
+    if snapshot_hash is not None and snapshot_hash != projection_hash:
+        errors.append(f"{key} projection and snapshot are not byte-identical")
+    if ref.get("revision") != artifact.get("revision"):
+        errors.append(f"{key} canonical_state revision does not match snapshot artifact")
+
+
+def replay_hook_ledger(root: Path, state: dict[str, Any], errors: list[str]) -> None:
+    """Deterministically re-derive the hook ledger and compare it to the projection.
+
+    Only runs when a confirmed series-outline and at least one confirmed
+    episode-scoped screenplay exist, so a missing or legacy project is not
+    spuriously rejected.
+    """
+    outline = next(
+        (item for item in state.get("artifacts", []) if isinstance(item, dict)
+         and item.get("type") == "series-outline" and item.get("status") == "confirmed"),
+        None,
+    )
+    screenplays = sorted(
+        (item for item in state.get("artifacts", []) if isinstance(item, dict)
+         and item.get("type") == "screenplay" and item.get("status") == "confirmed"
+         and isinstance(item.get("scope"), dict) and item["scope"].get("kind") == "episodes"),
+        key=lambda item: item["scope"]["start"],
+    )
+    if outline is None or not screenplays:
+        return
+    outline_path = root / outline["path"]
+    if not outline_path.is_file():
+        return
+    outline_data = read_json(outline_path, errors)
+    if errors:
+        return
+    project_id = state.get("project", {}).get("project_id")
+    engine = read_json(root / "short-drama-engine.json", errors) if (root / "short-drama-engine.json").is_file() else {}
+    episode_count = engine.get("profile", {}).get("episode_count") if isinstance(engine, dict) else None
+    if not is_positive_int(episode_count):
+        episode_count = max((item["scope"]["end"] for item in screenplays), default=1)
+    scripts_dir = Path(__file__).resolve().parent
+    sys.path.insert(0, str(scripts_dir))
+    from hook_ledger import seed_hook_ledger, derive_hook_ledger  # pylint: disable=import-outside-toplevel
+    ledger = seed_hook_ledger(outline_data, project_id, episode_count)
+    for screenplay in screenplays:
+        screenplay_path = root / screenplay["path"]
+        if not screenplay_path.is_file():
+            continue
+        script = read_json(screenplay_path, errors)
+        if errors:
+            return
+        ledger, derivation_errors = derive_hook_ledger(ledger, script)
+        if derivation_errors:
+            errors.append(
+                f"hook-ledger replay derivation failed for {screenplay['artifact_id']}: "
+                + "; ".join(derivation_errors)
+            )
+            return
+    projection_path = root / "hook-ledger.json"
+    if projection_path.is_file():
+        current = read_json(projection_path, errors)
+        if errors:
+            return
+        if current != ledger:
+            errors.append("hook-ledger does not match deterministic replay from confirmed outline and screenplays")
+
+
+def validate_hook_ledger(root: Path, state: dict[str, Any], errors: list[str]) -> None:
+    path = root / "hook-ledger.json"
+    engine = read_json(root / "short-drama-engine.json", errors) if (root / "short-drama-engine.json").is_file() else {}
+    ref = engine.get("canonical_state", {}).get("hook_ledger") if isinstance(engine, dict) else None
+    if state.get("schema_version") == "2.0" and engine.get("attachment", {}).get("status") == "active" and not path.is_file():
+        errors.append("active short-drama project requires hook-ledger.json")
+        return
+    if not path.is_file():
+        return
+    ledger = read_json(path, errors)
+    if errors:
+        return
+    validate_with_schema(ledger, "hook-ledger.schema.json", "hook-ledger", errors)
+    if isinstance(ref, dict):
+        validate_canonical_ref(root, state, errors, "hook_ledger", ref, "hook-ledger.json")
+    elif state.get("schema_version") == "2.0" and engine.get("attachment", {}).get("status") == "active":
+        errors.append("active short-drama project lacks hook-ledger canonical_state binding")
+    project = state.get("project") if isinstance(state.get("project"), dict) else {}
+    if ledger.get("project_id") != project.get("project_id", ""):
+        errors.append("hook-ledger project_id does not match project-state")
+    episode_count = engine.get("profile", {}).get("episode_count") if isinstance(engine, dict) else None
+    hooks = ledger.get("hooks") if isinstance(ledger.get("hooks"), list) else []
+    ids = [hook.get("hook_id") for hook in hooks if isinstance(hook, dict)]
+    if len(ids) != len(set(ids)):
+        errors.append("hook-ledger has duplicate hook ids")
+    for hook in hooks:
+        if not isinstance(hook, dict):
+            continue
+        label = hook.get("hook_id", "?")
+        planted = hook.get("planted_episode")
+        advanced = hook.get("last_advanced_episode")
+        resolved = hook.get("resolved_episode")
+        target = hook.get("target_payoff_episode")
+        if is_positive_int(episode_count):
+            for field, value in (("planted_episode", planted), ("last_advanced_episode", advanced), ("resolved_episode", resolved), ("target_payoff_episode", target)):
+                if is_positive_int(value) and value > episode_count:
+                    errors.append(f"hook {label} {field} exceeds episode_count {episode_count}")
+        if isinstance(advanced, int) and isinstance(planted, int) and advanced < planted:
+            errors.append(f"hook {label} last_advanced_episode precedes planted_episode")
+        if hook.get("status") == "resolved" and not isinstance(resolved, int):
+            errors.append(f"hook {label} is resolved but has no resolved_episode")
+        if isinstance(resolved, int) and hook.get("status") != "resolved":
+            errors.append(f"hook {label} has resolved_episode but is not resolved")
+        history = hook.get("evidence_history") if isinstance(hook.get("evidence_history"), list) else []
+        history_episodes = [entry.get("episode") for entry in history if isinstance(entry, dict)]
+        if history_episodes != sorted(history_episodes):
+            errors.append(f"hook {label} evidence_history is not ordered by episode")
+    replay_hook_ledger(root, state, errors)
+
+
+def replay_canon(root: Path, state: dict[str, Any], errors: list[str]) -> None:
+    """Replay the canon snapshot chain and compare it to the projection.
+
+    Each canon snapshot records its transformation source through `depends_on`:
+    a `canon-register` artifact for a register step, a `screenplay` artifact for
+    an evolve step, and otherwise a refresh step. Walking those immutable inputs
+    in revision order reproduces the canonical bytes deterministically.
+    """
+    by_id = {
+        item.get("artifact_id"): item for item in state.get("artifacts", [])
+        if isinstance(item, dict) and isinstance(item.get("artifact_id"), str)
+    }
+    snapshots = sorted(
+        (item for item in state.get("artifacts", []) if isinstance(item, dict)
+         and item.get("type") == "canon" and item.get("status") in {"confirmed", "superseded"}),
+        key=lambda item: item.get("revision", 0),
+    )
+    if not snapshots:
+        return
+    project_id = state.get("project", {}).get("project_id")
+    current = {"schema_version": "1.0", "project_id": project_id, "canon_version": 0, "claims": [], "candidates": []}
+    scripts_dir = Path(__file__).resolve().parent
+    sys.path.insert(0, str(scripts_dir))
+    from canon import merge_registered_canon, refresh_canon, derive_canon_updates  # pylint: disable=import-outside-toplevel
+    for snapshot in snapshots:
+        snapshot_path = root / snapshot["path"]
+        if not snapshot_path.is_file():
+            return
+        snapshot_data = read_json(snapshot_path, errors)
+        if errors:
+            return
+        op = "refresh"
+        input_artifact = None
+        for dependency in snapshot.get("depends_on", []):
+            artifact = by_id.get(dependency)
+            if artifact is None:
+                continue
+            if artifact.get("type") == "canon-register":
+                op = "register"
+                input_artifact = artifact
+            elif artifact.get("type") == "screenplay":
+                op = "evolve"
+                input_artifact = artifact
+        if op == "register":
+            if input_artifact is None:
+                errors.append(f"canon snapshot {snapshot['artifact_id']} register step lacks a canon-register input")
+                return
+            incoming = read_json(root / input_artifact["path"], errors)
+            if errors:
+                return
+            next_canon, merge_errors = merge_registered_canon(current, incoming)
+            if merge_errors:
+                errors.append(f"canon replay register failed at {snapshot['artifact_id']}: " + "; ".join(merge_errors))
+                return
+        elif op == "evolve":
+            if input_artifact is None:
+                errors.append(f"canon snapshot {snapshot['artifact_id']} evolve step lacks a screenplay input")
+                return
+            script = read_json(root / input_artifact["path"], errors)
+            if errors:
+                return
+            next_canon = derive_canon_updates(current, script)
+        else:
+            next_canon = refresh_canon(current)
+        if next_canon != snapshot_data:
+            errors.append(f"canon snapshot {snapshot['artifact_id']} does not match deterministic replay")
+        current = next_canon
+    projection_path = root / "canon.json"
+    if projection_path.is_file():
+        projection = read_json(projection_path, errors)
+        if errors:
+            return
+        if projection != current:
+            errors.append("canon projection does not match deterministic replay")
+
+
+def validate_canon(root: Path, state: dict[str, Any], errors: list[str]) -> None:
+    path = root / "canon.json"
+    engine = read_json(root / "short-drama-engine.json", errors) if (root / "short-drama-engine.json").is_file() else {}
+    ref = engine.get("canonical_state", {}).get("canon") if isinstance(engine, dict) else None
+    requires_canon = state.get("schema_version") == "2.0" and engine.get("attachment", {}).get("status") == "active" and any(
+        item.get("type") == "screenplay" and item.get("status") == "confirmed" for item in state.get("artifacts", []) if isinstance(item, dict)
+    )
+    if requires_canon and not path.is_file():
+        errors.append("confirmed short-drama screenplay requires canon.json")
+        return
+    if not path.is_file():
+        return
+    canon = read_json(path, errors)
+    if errors:
+        return
+    validate_with_schema(canon, "canon.schema.json", "canon", errors)
+    if isinstance(ref, dict):
+        validate_canonical_ref(root, state, errors, "canon", ref, "canon.json")
+    elif requires_canon:
+        errors.append("confirmed short-drama screenplay lacks canon canonical_state binding")
+    project = state.get("project") if isinstance(state.get("project"), dict) else {}
+    if canon.get("project_id") != project.get("project_id", ""):
+        errors.append("canon project_id does not match project-state")
+    episode_count = engine.get("profile", {}).get("episode_count") if isinstance(engine, dict) else None
+    claims = canon.get("claims") if isinstance(canon.get("claims"), list) else []
+    ids = [claim.get("claim_id") for claim in claims if isinstance(claim, dict)]
+    if len(ids) != len(set(ids)):
+        errors.append("canon has duplicate claim ids")
+    if is_positive_int(episode_count):
+        for claim in claims:
+            if not isinstance(claim, dict):
+                continue
+            label = claim.get("claim_id", "?")
+            reader_known_from = claim.get("visibility", {}).get("reader_known_from") if isinstance(claim.get("visibility"), dict) else None
+            status_episode = claim.get("status_updated_at_episode")
+            for field, value in (("reader_known_from", reader_known_from), ("status_updated_at_episode", status_episode)):
+                if is_positive_int(value) and value > episode_count:
+                    errors.append(f"canon {label} {field} exceeds episode_count {episode_count}")
+        for candidate in canon.get("candidates", []) if isinstance(canon.get("candidates"), list) else []:
+            if isinstance(candidate, dict) and is_positive_int(candidate.get("source_episode")) and candidate.get("source_episode") > episode_count:
+                errors.append(f"canon candidate source_episode exceeds episode_count {episode_count}")
+    replay_canon(root, state, errors)
+
+
 def validate_project(root: Path) -> list[str]:
     errors: list[str] = []
     try:
@@ -1618,6 +1948,8 @@ def validate_project(root: Path) -> list[str]:
     validate_with_schema(state, "project-state.schema.json", "project-state", errors)
     validate_with_schema(assets, "asset-manifest.schema.json", "asset-manifest", errors)
     validate_with_schema(ledger, "continuity-ledger.schema.json", "continuity-ledger", errors)
+    validate_hook_ledger(root, state, errors)
+    validate_canon(root, state, errors)
     project = state.get("project") if isinstance(state.get("project"), dict) else {}
     configuration = state.get("configuration") if isinstance(state.get("configuration"), dict) else {}
     project_id = project.get("project_id", "")

@@ -204,6 +204,11 @@ class TwoEpisodePipelineTests(unittest.TestCase):
                 state, "locked-assets", "asset-manifest.json", asset_body,
                 [audit_id], {"kind": "series"}, "confirmed",
             )
+            state["checkpoints"].append({
+                "checkpoint_id": "CHK-011", "stage": "assets", "decision": "confirmed",
+                "authorization": "fixture locked assets approval", "authorization_kind": "approval",
+                "sequence": len(state.get("checkpoints", [])) + 1, "affects": [locked_id],
+            })
             files.update({
                 "project-state.json": artifact_bytes(state),
                 "asset-manifest.json": asset_body,
@@ -238,6 +243,9 @@ class TwoEpisodePipelineTests(unittest.TestCase):
                 hashlib.sha256((project / "shot-plan.json").read_bytes()).hexdigest(),
             )
 
+            # The hook-debt completion gate is exercised in test_hook_ledger.py against
+            # completion_debt() directly; this pipeline fixture uses stub screenplays whose
+            # deterministic hook replay is empty, so completion succeeds on a clean ledger.
             short_drama.command_complete(types.SimpleNamespace(
                 project_dir=str(project), authorization="fixture completion approval"
             ))

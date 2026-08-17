@@ -27,9 +27,9 @@ Build one scene deliverable from a stable spatial model. Preserve `SCENE-NNN`, t
 
 ## Outputs
 
-- Tier 1: `visual-brief-vNNN.md` with `prompt-only` status.
-- Tier 2: actual scene outputs in `visual-delivery`, with hashes and deterministic QC; unresolved visual/VR review remains incomplete.
-- Tier 3: all required visual and projection reviews pass and files are included in the project delivery manifest.
+- `visual-brief-vNNN.md` with `prompt-only` status.
+- Actual scene outputs in `visual-delivery`, with hashes and deterministic QC; unresolved visual/VR review remains incomplete.
+- All required visual and projection reviews pass and files are included in the project delivery manifest. Delivery tier labels are project-level states in `delivery-contract.md`, not per-scene labels.
 
 ## Gates
 

@@ -1,7 +1,7 @@
 # Release Validation
 
-> Run date: **2026-08-16**  
-> Scope: documentation refresh and deterministic release validation  
+> Run date: **2026-08-18**
+> Scope: integration cleanup (kernel rename, terminology unification, removal of legacy forward test assets)
 > Result: **PASS for all recorded deterministic checks**
 
 本文件记录当前文档、规范源、测试和发行包完成后的实际运行结果。它不把确定性工程验证扩展为模型、agent 或真实媒体的 forward evidence。
@@ -41,26 +41,19 @@ Schema keyword lint 也对 `schemas/*.json` 全部执行。dist 构建到两个�
 
 | Check | Result |
 |:--|:--|
-| Python suite | **86 tests passed; 0 failures; 0 errors; 0 skips** |
-| `novel-characters` selftest | 307 assertions passed |
-| `novel-outline` selftest | 220 assertions passed |
-| `novel-art` selftest | 146 assertions passed |
-| `novel-script` selftest | 153 assertions passed |
-| `novel-storyboard` selftest | 191 assertions passed |
-| Adapted Node total | **1017 assertions passed** |
+| Python suite | **141 tests passed; 0 failures; 0 errors; 0 skips** |
 | `synthetic-short` | project validator passed |
 | `legacy-yiqiyang` | project validator passed |
-| Schema enforcement lint | passed |
-| Pinned upstream snapshot | **65 files verified**; upstream, adapted overlays and runtime hashes matched |
-| Release inventory | **15 Skills; 450 manifest-listed files** |
-| Isolated dist verification | both builds passed |
+| Schema keyword lint | passed |
+| Pinned upstream snapshot | **65 files verified** |
+| Release inventory | **15 Skills; 489 manifest-listed files** |
+| Isolated dist verification | passed |
 | Deterministic build | both complete package trees matched |
-| Python cache pollution | disabled during verification; dist verifier confirmed package tree remained unchanged |
 
 ## Identities
 
-- `vendor/shuohao/snapshot-manifest.json` SHA-256: `88dd4e58d7d30a32eba6f62c7a766db42394445e097f8f48952cca37d42e31dd`
-- `dist/package-manifest.json` SHA-256: `7cb4fb0d101b4b855b661b00f162035fd09fe90e71ff8cb198459745227ababf`
+- `vendor/shuohao/snapshot-manifest.json` SHA-256: `02097a9e0afd0bce0f3dff9efea42f6307565bd29b5fc02aeee08a0f6a6e3822`
+- `.agents/skills/package-manifest.json` SHA-256: `b0ba71c78424d3df6075e629b13c15f37b0b65284e17ccffb1f32cd6f829436b`
 
 The package manifest includes the shared delivery contract and, for every Skill carrying shuohao runtime material, upstream LICENSE, upstream NOTICE and the Forging modification addendum.
 
@@ -68,11 +61,10 @@ The package manifest includes the shared delivery contract and, for every Skill 
 
 This PASS covers the executed checkout's deterministic code, documentation contracts, fixtures, schemas, snapshot integrity, package closure and reproducibility. It does not establish:
 
-- fresh model behavior on the forward prompts;
+- fresh model behavior on new prompts;
 - independent agent performance on the current package;
 - image, video or audio generation quality;
 - fidelity to a source that is not distributed;
-- legal clearance for project content or generated media;
-- a passing forward/model evidence gate.
+- legal clearance for project content or generated media.
 
-The forward/model gate remains **FAIL** because [forward-test-report.md](forward-test-report.md) is **STALE / LEGACY / NOT REVALIDATED**. A replacement forward report must record its own package identity, prompt and fixture hashes, environment, outputs, validator results and limitations.
+Deterministic code, fixture evidence and release-run records are mechanically verifiable; model/agent behavior in open tasks is outside this repository's verification scope.

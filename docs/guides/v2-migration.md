@@ -17,7 +17,7 @@ python scripts/state_cli.py migrate-project --project-dir <PROJECT> --dry-run
 输出列出：
 
 - `schema_version` 和 `project_revision` 变化；
-- report/prompt/dialogue language、visual style、delivery 和 prompt-context 默认值；
+- report/prompt/dialogue language、visual style、delivery、prompt-context 和 episode-contract 默认值（短剧格式强制 `episode_contract_required: true`）；
 - source trust/rights 默认值；
 - confirmed mutable artifact 的 snapshot 计划；
 - 必须标为 invalid 的 artifact 及原因。

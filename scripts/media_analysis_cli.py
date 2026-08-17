@@ -254,6 +254,16 @@ def render_markdown(data: dict[str, Any]) -> str:
     return "\n".join(rows)
 
 
+def _remove_path(path: Path) -> None:
+    try:
+        if path.is_dir():
+            shutil.rmtree(path)
+        else:
+            path.unlink()
+    except FileNotFoundError:
+        pass
+
+
 def extract_review_frames(video_path: Path, data: dict[str, Any], output_dir: Path) -> list[dict[str, Any]]:
     errors = validate_analysis(data)
     if errors:
@@ -262,6 +272,7 @@ def extract_review_frames(video_path: Path, data: dict[str, Any], output_dir: Pa
     fps = data["source"].get("fps")
     frame_ms = max(1, round(1000 / fps)) if isinstance(fps, (int, float)) and fps > 0 else 40
     records: list[dict[str, Any]] = []
+    destinations: list[Path] = []
     for shot in data["shots"]:
         start = shot["start_ms"]
         end = shot["end_ms"]
@@ -274,12 +285,30 @@ def extract_review_frames(video_path: Path, data: dict[str, Any], output_dir: Pa
             output = output_dir / f"{shot['shot_id']}-{position}.png"
             if output.exists():
                 raise FileExistsError(f"refusing to overwrite review frame: {output}")
+            destinations.append(output)
+            records.append({"shot_id": shot["shot_id"], "position": position, "at_ms": at_ms, "path": str(output)})
+
+    staging_dir = Path(tempfile.mkdtemp(prefix=f".{output_dir.name}.frames-", dir=output_dir.parent))
+    installed: list[Path] = []
+    try:
+        for record, output in zip(records, destinations):
+            staged = staging_dir / output.name
             command = [
-                require_tool("ffmpeg"), "-hide_banner", "-loglevel", "error", "-ss", f"{at_ms / 1000:.3f}",
-                "-i", str(video_path), "-frames:v", "1", "-an", str(output),
+                require_tool("ffmpeg"), "-hide_banner", "-loglevel", "error", "-ss", f"{record['at_ms'] / 1000:.3f}",
+                "-i", str(video_path), "-frames:v", "1", "-an", str(staged),
             ]
             run(command)
-            records.append({"shot_id": shot["shot_id"], "position": position, "at_ms": at_ms, "path": str(output)})
+            if not staged.is_file():
+                raise RuntimeError(f"ffmpeg did not produce review frame: {output}")
+        for output in destinations:
+            os.replace(staging_dir / output.name, output)
+            installed.append(output)
+    except Exception:
+        for output in installed:
+            _remove_path(output)
+        raise
+    finally:
+        _remove_path(staging_dir)
     return records
 
 
@@ -287,11 +316,22 @@ def extract_audio(video_path: Path, output_path: Path) -> None:
     if output_path.exists():
         raise FileExistsError(f"refusing to overwrite audio file: {output_path}")
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    command = [
-        require_tool("ffmpeg"), "-hide_banner", "-loglevel", "error", "-i", str(video_path),
-        "-vn", "-acodec", "pcm_s16le", str(output_path),
-    ]
-    run(command)
+    handle, temp_name = tempfile.mkstemp(prefix=f".{output_path.name}.", suffix=output_path.suffix, dir=output_path.parent)
+    os.close(handle)
+    staged = Path(temp_name)
+    staged.unlink()
+    try:
+        command = [
+            require_tool("ffmpeg"), "-hide_banner", "-loglevel", "error", "-i", str(video_path),
+            "-vn", "-acodec", "pcm_s16le", str(staged),
+        ]
+        run(command)
+        if not staged.is_file():
+            raise RuntimeError(f"ffmpeg did not produce audio: {output_path}")
+        os.replace(staged, output_path)
+    except Exception:
+        _remove_path(staged)
+        raise
 
 
 def write_json(path: Path, value: Any) -> None:

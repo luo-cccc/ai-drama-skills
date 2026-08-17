@@ -40,6 +40,8 @@ intake -> development -> brief -> outline -> screenplay -> audit -> shots/assets
 | `project-state.json` | 项目配置、来源、artifact graph、checkpoint 和阶段；新项目为 schema v2 |
 | `asset-manifest.json` | 资产、视觉 DNA、证据与锁定；当前 CLI 基线仍为 schema v1 |
 | `continuity-ledger.json` | 状态变化与范围快照；当前操作格式为 schema v1 |
+| `hook-ledger.json` | 短剧悬念台账的根投影；权威字节是 `short-drama/governance/hook-ledger-vNNN.json` 不可变快照，由大纲 major beats 播种、剧本合同 hook 动作确定性演化，`short-drama-engine.canonical_state` 绑定 |
+| `canon.json` | 短剧故事事实/世界规则 claims 的根投影；权威字节是 `short-drama/governance/canon-vNNN.json` 不可变快照（register 输入另存 `canon-register-vNNN.json`），剧本导入时确定性门禁与演化 |
 | `short-drama-engine.json` | 短剧 profile、runtime snapshot、crosswalk、aggregate 和 completion 绑定 |
 | `audit-vNNN.json` | v2 正式审计的 canonical JSON |
 | scoped `shot-plan-vNNN.json` | 分集范围内的 canonical 时间轴与镜头计划 |
@@ -102,10 +104,10 @@ docs/                    操作指南和导航
 src/skills/              15 个 Skill 的规范源
 shared/references/       跨 Skill 的 packageable 规范契约
 schemas/                 JSON Schema
-scripts/                 状态、验证、时间轴、媒体、打包和 snapshot 工具
-engine/shuohao-adapted/  Forging 适配源与修改说明
-engine/shuohao-runtime/  同步生成的精简执行副本
-vendor/shuohao/upstream/ 固定 upstream snapshot，不手工修改
+scripts/                 状态、验证、写作质量门、悬念台账与正典、时间轴、媒体、打包和 snapshot 工具
+engine/kernels/  内核适配源与修改说明
+engine/runtime/  同步生成的精简执行副本
+vendor/kernels/ 第三方内核与版本快照，不手工修改
 examples/                v1 兼容与局部契约样例
 tests/                   自动化测试、fixture 和历史 forward 记录
 dist/                    可选的临时发布构建，不受版本控制
@@ -119,7 +121,7 @@ dist/                    可选的临时发布构建，不受版本控制
 python -m unittest discover -s tests -p "test_*.py" -v
 python scripts/validate_project.py examples/synthetic-short
 python scripts/validate_project.py examples/legacy-yiqiyang
-python scripts/sync_shuohao_snapshot.py --source ../shuohao-skills-main --check
+python scripts/sync_kernel_snapshot.py --source ../shuohao-skills-main --check
 python scripts/package_skills.py
 python tests/verify_dist.py
 ```

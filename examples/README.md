@@ -15,6 +15,6 @@
 - Markdown 文件用于人类审阅；JSON manifest、ledger 和 shot plan 是相应结构化边界的基准。
 - `confirmed` 只表示记录范围内的确认，不自动表示来源权利、原文忠实度、媒体生成质量或全项目完成。
 - `superseded` 文件保留用于版本回归，不应作为当前下游输入。
-- 示例验证属于确定性仓库测试，不构成独立模型前向测试证据。前向证据状态见 [forward-test-report.md](../tests/forward-test-report.md)。
+- 示例验证属于确定性仓库测试，不构成独立模型前向测试证据；模型/agent 在开放任务中的表现不在本仓库验证范围内。
 
 [synthetic-short/README.md](synthetic-short/README.md) 说明当前合成样例的具体范围；[legacy-state-note.md](legacy-yiqiyang/legacy-state-note.md) 说明历史样例的来源缺口和状态解释。

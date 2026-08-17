@@ -18,16 +18,16 @@ Run governed cast analysis and import stable cast candidates, source evidence, i
 ## Execution
 
 1. Place immutable prompt context before creative instructions.
-2. Give every cast card a stable upstream `CNN` ID. Reuse it across regeneration and outline work; never bind by ordering alone.
+2. The adapted cast kernel is name-keyed: emit a stable display `name` plus `aliases`, and keep `persona.evidence` exact. Stable upstream `C`-IDs are reconciled from the confirmed series outline at `import-outline --kind series`; do not mint or rebind IDs by ordering alone.
 3. Validate exact `persona.evidence` against source text. Treat unsupported appearance, voice, and generation prompts as inference/proposal.
 4. Import with `short_drama_cli.py import-cast ... --prompt-context <context.json> --source <source>`.
 5. Store TTS guidance under `visual_dna.voice`. Register actual preview media separately through visual-delivery records.
 
 ## Outputs
 
-- Tier 1: canonical cast artifact, reports, voice/image prompts, and Forging asset candidates.
-- Tier 2: optional preview media with hashes and QC records; candidate assets remain unlocked.
-- Tier 3: only after dedicated Forging visual review, approved manifest evidence/locks, and delivery-manifest inclusion.
+- Canonical cast artifact, reports, voice/image prompts, and Forging asset candidates (unlocked).
+- Optional preview media with hashes and QC records; candidate assets remain unlocked.
+- Media delivery is a separate project-level state governed by `delivery-contract.md`; previews do not advance the project delivery tier.
 
 ## Gates
 

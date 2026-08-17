@@ -8,7 +8,7 @@
 |:--|:--|:--|
 | 初始化、恢复、状态与 checkpoint | [项目生命周期](guides/project-lifecycle.md) | [workflow-contract](../shared/references/workflow-contract.md) |
 | 将 schema v1 项目升级到 v2 state | [v2 迁移](guides/v2-migration.md) | [data-contract](../shared/references/data-contract.md) |
-| 小说改短剧及五阶段导入 | [短剧 v2](guides/short-drama-v2.md) | [prompt governance](../shared/references/short-drama-prompt-governance.md) |
+| 小说改短剧：内核导入、剧本两阶段确认、治理快照、聚合与交付 | [短剧 v2](guides/short-drama-v2.md) | [prompt governance](../shared/references/short-drama-prompt-governance.md) |
 | Prompt、视觉和媒体交付 | [生成、交付与 QC](guides/delivery-and-qc.md) | [delivery-contract](../shared/references/delivery-contract.md) |
 | snapshot、打包和 release evidence | [发布与验证](guides/release.md) | [tests/README](../tests/README.md) |
 

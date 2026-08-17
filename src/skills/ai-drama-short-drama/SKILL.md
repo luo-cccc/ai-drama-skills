@@ -19,15 +19,17 @@ Govern the complete short-drama series. Forging owns project state, evidence, ID
 ## Execution
 
 1. Before every creative stage, run `prompt-context` for the exact stage and scope. Prepend the returned immutable JSON; do not summarize it or silently fill profile fields.
-2. Run characters, outline skeleton, confirmed series outline, art, screenplay batches of at most three contiguous episodes, canonical audits, and storyboards in order.
-3. Require a canonical JSON audit for every screenplay range and a full-series audit before aggregation.
-4. Import storyboard ranges only when screenplay and audit scopes match exactly. Each import creates the governed storyboard, scoped shot plan, H3 prompts, and generation manifest.
-5. Run `aggregate-shot-plan` only after confirmed scoped plans cover every episode without gaps or overlaps. Run `complete` only after all completion gates pass.
+2. Run characters, outline skeleton, confirmed series outline, art, then screenplay batches of at most three contiguous episodes. Import each screenplay without `--confirm` first, generate an audit context, then run `confirm-screenplay` to confirm the screenplay and its exact-target conformance audit atomically; a `pending-confirmation` candidate never supersedes confirmed work or evolves governance state.
+3. Register story facts and world rules as `canon.json` claims before screenplay batches (`canon register`); the outline confirmation seeds `hook-ledger.json` from major beats, and each confirmed screenplay evolves both deterministically. Both are stored as immutable versioned snapshots bound in `short-drama-engine.canonical_state`, with root projections; `rebuild-governance` recovers a drifted ledger.
+4. Require a canonical JSON audit for every screenplay range and a full-series audit before aggregation.
+5. Import storyboard ranges only when screenplay and audit scopes match exactly. Each import creates the governed storyboard, scoped shot plan, H3 prompts, and generation manifest.
+6. Run `aggregate-shot-plan` only after confirmed scoped plans cover every episode without gaps or overlaps. Register the series delivery manifest via `import-delivery` when `delivery_required=true`, then run `complete` only after all completion gates pass, including the hook-debt gate (unresolved hooks planted before the final episode block completion).
 
 ## Outputs
 
 - `short-drama-engine.json` as operational state, never creative authority.
 - Canonical cast, outline, screenplay, audit, storyboard, asset, scoped shot-plan, generation-manifest, and delivery-manifest artifacts.
+- Immutable `hook-ledger` / `canon` governance snapshots plus `canon-register` inputs and byte-identical root projections, all bound in `short-drama-engine.canonical_state`.
 - A versioned immutable series shot-plan snapshot plus root `shot-plan.json` as its exact projection.
 - Tier 1 canonical plans, Tier 2 generation packages, and Tier 3 verified media according to the actual requested delivery.
 
@@ -47,10 +49,14 @@ Govern the complete short-drama series. Forging owns project state, evidence, ID
 - `references/workflow-contract.md`
 - `references/data-contract.md`
 - `references/short-drama-prompt-governance.md`
+- `references/episode-drama-contract.md`
 - `references/evidence-audit.md`
 - `references/timeline-contract.md`
 - `references/delivery-contract.md`
 - `schemas/short-drama-engine.schema.json`
 - `schemas/prompt-context.schema.json`
+- `schemas/episode-contract.schema.json`
+- `schemas/hook-ledger.schema.json`
+- `schemas/canon.schema.json`
 - `schemas/generation-manifest.schema.json`
 - `schemas/delivery-manifest.schema.json`

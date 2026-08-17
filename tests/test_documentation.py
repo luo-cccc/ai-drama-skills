@@ -83,9 +83,6 @@ class DocumentationContractTests(unittest.TestCase):
         self.assertIn("schema v1", examples)
         self.assertIn("partial", examples)
         self.assertIn("legacy", examples)
-        forward = (ROOT / "tests" / "forward-test-report.md").read_text(encoding="utf-8").upper()
-        for marker in ("STALE", "LEGACY", "NOT REVALIDATED", "FAIL"):
-            self.assertIn(marker, forward)
 
     def test_delivery_and_modification_notices_are_packaged(self):
         manifest = (ROOT / "skill-manifest.json").read_text(encoding="utf-8")

@@ -13,10 +13,21 @@ from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 VALIDATOR_PATH = ROOT / "scripts" / "validate_project.py"
+SCHEMA_VALIDATOR_PATH = ROOT / "scripts" / "schema_validator.py"
+MEDIA_ANALYSIS_PATH = ROOT / "scripts" / "media_analysis_cli.py"
+
 SPEC = importlib.util.spec_from_file_location("validation_hardening_validator", VALIDATOR_PATH)
 assert SPEC and SPEC.loader
 validator = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(validator)
+SCHEMA_SPEC = importlib.util.spec_from_file_location("validation_hardening_schema", SCHEMA_VALIDATOR_PATH)
+assert SCHEMA_SPEC and SCHEMA_SPEC.loader
+schema_validator = importlib.util.module_from_spec(SCHEMA_SPEC)
+SCHEMA_SPEC.loader.exec_module(schema_validator)
+MEDIA_SPEC = importlib.util.spec_from_file_location("validation_hardening_media", MEDIA_ANALYSIS_PATH)
+assert MEDIA_SPEC and MEDIA_SPEC.loader
+media_analysis = importlib.util.module_from_spec(MEDIA_SPEC)
+MEDIA_SPEC.loader.exec_module(media_analysis)
 
 
 def write_json(path: Path, value: dict) -> None:
@@ -385,6 +396,122 @@ class ValidationHardeningTests(unittest.TestCase):
             self.assertTrue(any("media hash mismatch" in error for error in errors), errors)
             self.assertTrue(any("lacks passing visual review" in error for error in errors), errors)
 
+    def test_manifest_schema_status_and_version_conditions(self):
+        schemas = ROOT / "schemas"
+        delivery = {
+            "schema_version": "2.0", "delivery_id": "DELIVERY-001", "project_id": "PROJECT-001",
+            "scope": {"kind": "series"}, "status": "complete",
+            "rights_summary": {"status": "user-owned", "legal_clearance_claimed": False, "restrictions": []},
+            "language_profile": {"report_language": "zh", "prompt_language": "en", "dialogue_language": "zh"},
+            "visual_profile": {"style": "realistic", "aspect_ratio": "16:9"},
+            "artifacts": [], "storyboard_images": [], "known_gaps": [],
+        }
+        errors = schema_validator.validate_file(delivery, schemas / "delivery-manifest.schema.json", "delivery")
+        self.assertTrue(errors)
+        delivery["artifacts"] = [{
+            "artifact_id": "ART-001", "role": "video", "path": "clip.mp4", "sha256": "0" * 64,
+            "media_type": "video/mp4", "status": "incomplete", "source_job_id": None, "qc_status": "not-run",
+        }]
+        delivery["storyboard_images"] = [{
+            "segment_id": "E01-01", "cut_index": 1, "path": "E01-01/f1.png", "sha256": "0" * 64,
+            "actual_width_px": 1, "actual_height_px": 1, "qc_status": "not-run",
+        }]
+        self.assertTrue(schema_validator.validate_file(delivery, schemas / "delivery-manifest.schema.json", "delivery"))
+        delivery["status"] = "prompt-only"
+        self.assertEqual([], schema_validator.validate_file(delivery, schemas / "delivery-manifest.schema.json", "delivery"))
+
+        visual = {
+            "schema_version": "2.0", "delivery_id": "VIS-001", "project_id": "PROJECT-001",
+            "mode": "concept", "status": "prompt-only",
+            "rights": {"status": "user-owned", "legal_clearance_claimed": False, "usage_basis": "fixture"},
+            "specification": {"report_language": "zh", "prompt_language": "en", "style": "realistic", "aspect_ratio": "1:1", "format": "png"},
+            "capabilities": {key: {"status": "untested", "checked_by": "fixture", "checked_at": "2026-08-16T12:00:00Z", "details": None} for key in ("image_generation", "image_editing", "deterministic_layout", "vr_equirectangular")},
+            "evidence": [], "design_decisions": [], "outputs": [],
+            "failures": [{"class": "unavailable-tool", "message": "not available"}],
+        }
+        self.assertEqual([], schema_validator.validate_file(visual, schemas / "visual-delivery.schema.json", "visual"))
+        output = {"role": "reference", "path": "frame.png", "sha256": "0" * 64, "mime_type": "image/png", "qc": {"decoded": True, "actual_width_px": 1, "actual_height_px": 1, "nonblank": True, "aspect_ratio_matches": True, "visual_review": "pass"}}
+        visual["outputs"].append(output)
+        self.assertTrue(schema_validator.validate_file(visual, schemas / "visual-delivery.schema.json", "visual"))
+        visual["status"] = "incomplete"
+        self.assertEqual([], schema_validator.validate_file(visual, schemas / "visual-delivery.schema.json", "visual"))
+        visual["status"] = "failed"
+        self.assertTrue(schema_validator.validate_file(visual, schemas / "visual-delivery.schema.json", "visual"))
+        visual["outputs"] = []
+        self.assertEqual([], schema_validator.validate_file(visual, schemas / "visual-delivery.schema.json", "visual"))
+        visual["status"] = "complete"
+        visual["failures"] = []
+        visual["outputs"] = [output]
+        self.assertEqual([], schema_validator.validate_file(visual, schemas / "visual-delivery.schema.json", "visual"))
+        visual["specification"]["projection"] = "equirectangular"
+        self.assertTrue(schema_validator.validate_file(visual, schemas / "visual-delivery.schema.json", "visual"))
+        output["qc"]["vr_review"] = "pass"
+        self.assertEqual([], schema_validator.validate_file(visual, schemas / "visual-delivery.schema.json", "visual"))
+
+        asset = {
+            "schema_version": "1.0", "project_id": "PROJECT-001", "manifest_version": 1,
+            "assets": [{"asset_id": "PROP-001", "type": "prop", "name": "Key", "aliases": [], "lock_status": "unlocked", "locked_fields": [], "evidence": [{"field": "color", "level": "confirmed", "source_ref": "SRC-001", "locator": "line 1"}], "visual_dna": {}}],
+        }
+        self.assertEqual([], schema_validator.validate_file(asset, schemas / "asset-manifest.schema.json", "asset"))
+        v1_evidence = copy.deepcopy(asset["assets"][0]["evidence"][0])
+        asset["schema_version"] = "2.0"
+        self.assertTrue(schema_validator.validate_file(asset, schemas / "asset-manifest.schema.json", "asset"))
+        asset["assets"][0]["evidence"] = [{"field": "color", "status": "observed", "source_ref": "SRC-001", "locator": "line 1"}]
+        self.assertEqual([], schema_validator.validate_file(asset, schemas / "asset-manifest.schema.json", "asset"))
+        asset["schema_version"] = "1.0"
+        self.assertTrue(schema_validator.validate_file(asset, schemas / "asset-manifest.schema.json", "asset"))
+        asset["assets"][0]["evidence"] = [v1_evidence]
+
+    def test_media_extraction_installs_atomically_and_cleans_failed_attempt(self):
+        analysis = {"source": {"fps": 25}, "shots": [{"shot_id": "SHOT-001", "start_ms": 0, "end_ms": 1000}]}
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            output_dir = root / "frames"
+            output_dir.mkdir()
+            with mock.patch.object(media_analysis, "validate_analysis", return_value=[]), \
+                 mock.patch.object(media_analysis, "require_tool", return_value="ffmpeg") as tool, \
+                 mock.patch.object(media_analysis, "run", side_effect=lambda command: Path(command[-1]).write_bytes(b"frame")):
+                records = media_analysis.extract_review_frames(root / "input.mp4", analysis, output_dir)
+            self.assertEqual(3, len(records))
+            self.assertTrue(all(Path(row["path"]).is_file() for row in records))
+            self.assertFalse(list(root.glob(".frames.frames-*")))
+            tool.assert_called()
+
+            calls = 0
+            def fail_after_one(command):
+                nonlocal calls
+                calls += 1
+                Path(command[-1]).write_bytes(b"partial")
+                if calls == 2:
+                    raise RuntimeError("ffmpeg failed")
+
+            retry_dir = root / "retry"
+            with mock.patch.object(media_analysis, "validate_analysis", return_value=[]), \
+                 mock.patch.object(media_analysis, "require_tool", return_value="ffmpeg"), \
+                 mock.patch.object(media_analysis, "run", side_effect=fail_after_one):
+                with self.assertRaises(RuntimeError):
+                    media_analysis.extract_review_frames(root / "input.mp4", analysis, retry_dir)
+            self.assertFalse(list(retry_dir.glob("*.png")))
+            self.assertFalse(list(root.glob(".retry.frames-*")))
+            with mock.patch.object(media_analysis, "validate_analysis", return_value=[]), \
+                 mock.patch.object(media_analysis, "require_tool", return_value="ffmpeg"), \
+                 mock.patch.object(media_analysis, "run", side_effect=lambda command: Path(command[-1]).write_bytes(b"frame")):
+                retry_records = media_analysis.extract_review_frames(root / "input.mp4", analysis, retry_dir)
+            self.assertEqual(3, len(retry_records))
+
+            audio = root / "audio.wav"
+            with mock.patch.object(media_analysis, "require_tool", return_value="ffmpeg"), \
+                 mock.patch.object(media_analysis, "run", side_effect=lambda command: (Path(command[-1]).write_bytes(b"partial"), (_ for _ in ()).throw(RuntimeError("ffmpeg failed")))[1]):
+                with self.assertRaises(RuntimeError):
+                    media_analysis.extract_audio(root / "input.mp4", audio)
+            self.assertFalse(audio.exists())
+            self.assertFalse(list(root.glob(".audio.wav.*")))
+            with mock.patch.object(media_analysis, "require_tool", return_value="ffmpeg"), \
+                 mock.patch.object(media_analysis, "run", side_effect=lambda command: Path(command[-1]).write_bytes(b"audio")):
+                media_analysis.extract_audio(root / "input.mp4", audio)
+            self.assertEqual(b"audio", audio.read_bytes())
+            self.assertFalse(list(root.glob(".audio.wav.*")))
+
     def test_complete_requires_consistent_completion_records(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -428,6 +555,54 @@ class ValidationHardeningTests(unittest.TestCase):
             errors = validator.validate_project(root)
             self.assertTrue(errors)
             self.assertTrue(all(isinstance(error, str) for error in errors))
+
+    def test_hook_and_canon_episode_bounds(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            state = {
+                "schema_version": "2.0",
+                "project": {"project_id": "PROJECT-001"},
+                "artifacts": [],
+            }
+            hook = {
+                "schema_version": "1.0", "project_id": "PROJECT-001", "ledger_version": 1,
+                "hooks": [{
+                    "hook_id": "H-001", "name": "旧债", "kind": "plot", "status": "open",
+                    "planted_episode": 4, "last_advanced_episode": 4, "timing": "near-term",
+                    "evidence_history": [],
+                }],
+            }
+            canon = {
+                "schema_version": "1.0", "project_id": "PROJECT-001", "canon_version": 1,
+                "claims": [{
+                    "claim_id": "CAN-001", "domain": "world", "claim_type": "temporary_state",
+                    "content": "x", "scope": {"applies_to": [], "excludes": []},
+                    "authority": {"source": "fixture", "priority": "soft"},
+                    "visibility": {"reader_known_from": 5, "character_known_by": [], "hidden_from": []},
+                    "relations": {"conflicts_with": [], "resolves_by": None, "depends_on": []},
+                    "constraints": {"non_generalizable": False, "requires_cost": [], "forbidden_uses": []},
+                    "status": "active", "status_updated_at_episode": None, "evidence": [],
+                }],
+                "candidates": [],
+            }
+            write_json(root / "hook-ledger.json", hook)
+            write_json(root / "canon.json", canon)
+            write_json(root / "short-drama-engine.json", {
+                "schema_version": "2.0",
+                "profile": {"episode_count": 3},
+                "attachment": {"status": "active"},
+                "canonical_state": {
+                    "hook_ledger": {"projection_path": "hook-ledger.json", "sha256": hashlib.sha256((root / "hook-ledger.json").read_bytes()).hexdigest(), "revision": 1},
+                    "canon": {"projection_path": "canon.json", "sha256": hashlib.sha256((root / "canon.json").read_bytes()).hexdigest(), "revision": 1},
+                },
+            })
+            errors: list[str] = []
+            validator.validate_hook_ledger(root, state, errors)
+            self.assertTrue(any("planted_episode exceeds episode_count" in error for error in errors), errors)
+            self.assertTrue(any("last_advanced_episode exceeds episode_count" in error for error in errors), errors)
+            errors = []
+            validator.validate_canon(root, state, errors)
+            self.assertTrue(any("reader_known_from exceeds episode_count" in error for error in errors), errors)
 
 
 if __name__ == "__main__":

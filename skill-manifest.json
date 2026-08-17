@@ -27,6 +27,8 @@
         "short-drama-engine.schema.json",
         "audit-report.schema.json",
         "prompt-context.schema.json",
+        "hook-ledger.schema.json",
+        "canon.schema.json",
         "visual-delivery.schema.json",
         "generation-manifest.schema.json",
         "delivery-manifest.schema.json"
@@ -53,7 +55,8 @@
         "workflow-contract.md",
         "screenplay-format.md",
         "performance-camera.md",
-        "originality-safety.md"
+        "originality-safety.md",
+        "episode-drama-contract.md"
       ],
       "scripts": [
         "state_cli.py",
@@ -68,7 +71,8 @@
       "shared_references": [
         "workflow-contract.md",
         "screenplay-format.md",
-        "evidence-audit.md"
+        "evidence-audit.md",
+        "episode-drama-contract.md"
       ],
       "scripts": [
         "state_cli.py",
@@ -86,6 +90,8 @@
         "short-drama-engine.schema.json",
         "audit-report.schema.json",
         "prompt-context.schema.json",
+        "hook-ledger.schema.json",
+        "canon.schema.json",
         "visual-delivery.schema.json",
         "generation-manifest.schema.json",
         "delivery-manifest.schema.json"
@@ -115,6 +121,8 @@
         "short-drama-engine.schema.json",
         "audit-report.schema.json",
         "prompt-context.schema.json",
+        "hook-ledger.schema.json",
+        "canon.schema.json",
         "visual-delivery.schema.json",
         "generation-manifest.schema.json",
         "delivery-manifest.schema.json"
@@ -146,6 +154,8 @@
         "short-drama-engine.schema.json",
         "audit-report.schema.json",
         "prompt-context.schema.json",
+        "hook-ledger.schema.json",
+        "canon.schema.json",
         "visual-delivery.schema.json",
         "generation-manifest.schema.json",
         "delivery-manifest.schema.json"
@@ -177,6 +187,8 @@
         "short-drama-engine.schema.json",
         "audit-report.schema.json",
         "prompt-context.schema.json",
+        "hook-ledger.schema.json",
+        "canon.schema.json",
         "visual-delivery.schema.json",
         "generation-manifest.schema.json",
         "delivery-manifest.schema.json"
@@ -211,6 +223,8 @@
         "short-drama-engine.schema.json",
         "audit-report.schema.json",
         "prompt-context.schema.json",
+        "hook-ledger.schema.json",
+        "canon.schema.json",
         "visual-delivery.schema.json",
         "generation-manifest.schema.json",
         "delivery-manifest.schema.json"
@@ -250,6 +264,7 @@
         "timeline-contract.md",
         "visual-evidence.md",
         "short-drama-prompt-governance.md",
+        "episode-drama-contract.md",
         "delivery-contract.md"
       ],
       "scripts": [
@@ -258,6 +273,9 @@
         "timeline_cli.py",
         "validate_project.py",
         "schema_validator.py",
+        "script_quality.py",
+        "hook_ledger.py",
+        "canon.py",
         "project_store.py"
       ],
       "schemas": [
@@ -269,6 +287,9 @@
         "shot-analysis.schema.json",
         "audit-report.schema.json",
         "prompt-context.schema.json",
+        "episode-contract.schema.json",
+        "hook-ledger.schema.json",
+        "canon.schema.json",
         "visual-delivery.schema.json",
         "generation-manifest.schema.json",
         "delivery-manifest.schema.json"
@@ -368,6 +389,8 @@
         "shot-analysis.schema.json",
         "audit-report.schema.json",
         "prompt-context.schema.json",
+        "hook-ledger.schema.json",
+        "canon.schema.json",
         "visual-delivery.schema.json",
         "generation-manifest.schema.json",
         "delivery-manifest.schema.json"
@@ -409,6 +432,7 @@
         "workflow-contract.md",
         "data-contract.md",
         "short-drama-prompt-governance.md",
+        "episode-drama-contract.md",
         "delivery-contract.md"
       ],
       "scripts": [
@@ -427,6 +451,9 @@
         "shot-analysis.schema.json",
         "audit-report.schema.json",
         "prompt-context.schema.json",
+        "episode-contract.schema.json",
+        "hook-ledger.schema.json",
+        "canon.schema.json",
         "visual-delivery.schema.json",
         "generation-manifest.schema.json",
         "delivery-manifest.schema.json"
@@ -486,6 +513,8 @@
         "shot-analysis.schema.json",
         "audit-report.schema.json",
         "prompt-context.schema.json",
+        "hook-ledger.schema.json",
+        "canon.schema.json",
         "visual-delivery.schema.json",
         "generation-manifest.schema.json",
         "delivery-manifest.schema.json"
@@ -528,6 +557,7 @@
         "screenplay-format.md",
         "evidence-audit.md",
         "short-drama-prompt-governance.md",
+        "episode-drama-contract.md",
         "delivery-contract.md"
       ],
       "scripts": [
@@ -546,6 +576,9 @@
         "shot-analysis.schema.json",
         "audit-report.schema.json",
         "prompt-context.schema.json",
+        "episode-contract.schema.json",
+        "hook-ledger.schema.json",
+        "canon.schema.json",
         "visual-delivery.schema.json",
         "generation-manifest.schema.json",
         "delivery-manifest.schema.json"
@@ -607,6 +640,8 @@
         "shot-analysis.schema.json",
         "audit-report.schema.json",
         "prompt-context.schema.json",
+        "hook-ledger.schema.json",
+        "canon.schema.json",
         "visual-delivery.schema.json",
         "generation-manifest.schema.json",
         "delivery-manifest.schema.json"
