@@ -82,6 +82,36 @@
     },
     "known_gaps": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"status": {"const": "complete"}},
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "artifacts": {
+            "minItems": 1,
+            "items": {
+              "properties": {
+                "status": {"const": "delivered"},
+                "qc_status": {"enum": ["pass", "not-applicable"]}
+              },
+              "required": ["status", "qc_status"]
+            }
+          },
+          "storyboard_images": {
+            "minItems": 1,
+            "items": {
+              "properties": {"qc_status": {"const": "pass"}},
+              "required": ["qc_status"]
+            }
+          },
+          "known_gaps": {"maxItems": 0}
+        }
+      }
+    }
+  ],
   "$defs": {
     "scope": {
       "oneOf": [

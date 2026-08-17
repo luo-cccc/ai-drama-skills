@@ -1460,8 +1460,8 @@ def validate_short_drama_engine(
         errors.append("short-drama-engine schema_version/project_id mismatch")
     if version == "2.0":
         snapshot = engine.get("engine_snapshot", {}) if isinstance(engine.get("engine_snapshot"), dict) else {}
-        snapshot_manifest = ROOT / "vendor" / "shuohao" / "snapshot-manifest.json"
-        runtime_root = ROOT / "engine" / "shuohao-runtime"
+        snapshot_manifest = ROOT / "vendor" / "kernels" / "snapshot-manifest.json"
+        runtime_root = ROOT / "engine" / "runtime"
         if not snapshot_manifest.is_file():
             errors.append("short-drama-engine pinned snapshot manifest is missing")
         else:

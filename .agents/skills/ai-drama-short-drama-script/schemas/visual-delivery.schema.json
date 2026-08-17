@@ -10,7 +10,7 @@
     "project_id": {"type": ["string", "null"], "pattern": "^PROJECT-[0-9]{3}$"},
     "asset_id": {"type": ["string", "null"], "pattern": "^(CHAR|SCENE|PROP|MOTIF|COSTUME|BG)-[0-9]{3}(?:-V[0-9]{2})?$"},
     "mode": {"enum": ["reconstruction", "concept"]},
-    "status": {"enum": ["generated", "edited", "prompt-only", "incomplete", "failed"]},
+    "status": {"enum": ["complete", "generated", "edited", "prompt-only", "incomplete", "failed"]},
     "rights": {"$ref": "#/$defs/rights"},
     "specification": {
       "type": "object",
@@ -80,6 +80,80 @@
       }
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"status": {"enum": ["complete", "generated", "edited"]}},
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "outputs": {
+            "minItems": 1,
+            "items": {"$ref": "#/$defs/completed_output"}
+          },
+          "failures": {"maxItems": 0}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"status": {"const": "prompt-only"}},
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "outputs": {"maxItems": 0},
+          "failures": {"minItems": 1}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"status": {"const": "incomplete"}},
+        "required": ["status"]
+      },
+      "then": {"properties": {"failures": {"minItems": 1}}}
+    },
+    {
+      "if": {
+        "properties": {"status": {"const": "failed"}},
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "outputs": {"maxItems": 0},
+          "failures": {"minItems": 1}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {"enum": ["complete", "generated", "edited"]},
+          "specification": {
+            "properties": {"projection": {"const": "equirectangular"}},
+            "required": ["projection"]
+          }
+        },
+        "required": ["status", "specification"]
+      },
+      "then": {
+        "properties": {
+          "outputs": {
+            "items": {
+              "properties": {
+                "qc": {
+                  "properties": {"vr_review": {"const": "pass"}},
+                  "required": ["vr_review"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
   "$defs": {
     "capability": {
       "type": "object",
@@ -102,6 +176,23 @@
         "restrictions": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
       },
       "additionalProperties": false
+    },
+    "completed_output": {
+      "allOf": [
+        {"$ref": "#/$defs/output"},
+        {
+          "properties": {
+            "qc": {
+              "properties": {
+                "decoded": {"const": true},
+                "nonblank": {"const": true},
+                "aspect_ratio_matches": {"const": true},
+                "visual_review": {"const": "pass"}
+              }
+            }
+          }
+        }
+      ]
     },
     "output": {
       "type": "object",

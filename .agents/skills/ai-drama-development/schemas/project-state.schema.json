@@ -42,7 +42,8 @@
         "dialogue_language": {"type": "string", "minLength": 2},
         "visual_style": {"type": "string", "minLength": 1},
         "delivery_required": {"type": "boolean"},
-        "prompt_context_required": {"type": "boolean"}
+        "prompt_context_required": {"type": "boolean"},
+        "episode_contract_required": {"type": "boolean"}
       },
       "additionalProperties": false
     },
@@ -56,8 +57,44 @@
       "then": {
         "required": ["project_revision"],
         "properties": {
-          "configuration": {"required": ["report_language", "prompt_language", "dialogue_language", "visual_style", "delivery_required", "prompt_context_required"]},
-          "sources": {"items": {"required": ["trust_status", "rights"]}}
+          "configuration": {"required": ["report_language", "prompt_language", "dialogue_language", "visual_style", "delivery_required", "prompt_context_required", "episode_contract_required"]},
+          "sources": {"items": {"required": ["trust_status", "rights"]}},
+          "checkpoints": {
+            "items": {
+              "required": ["authorization_kind"],
+              "properties": {"affects": {"minItems": 1}},
+              "allOf": [
+                {
+                  "if": {"properties": {"authorization_kind": {"const": "risk-acceptance"}}, "required": ["authorization_kind"]},
+                  "then": {"properties": {"decision": {"const": "confirmed"}}}
+                },
+                {
+                  "if": {"properties": {"decision": {"const": "automatic"}}, "required": ["decision"]},
+                  "then": {"properties": {"authorization_kind": {"const": "automatic-policy"}}}
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "schema_version": {"const": "2.0"},
+          "project": {
+            "properties": {"format": {"const": "ai-short-drama-series"}},
+            "required": ["format"]
+          }
+        },
+        "required": ["schema_version", "project"]
+      },
+      "then": {
+        "properties": {
+          "configuration": {
+            "properties": {"episode_contract_required": {"const": true}},
+            "required": ["episode_contract_required"]
+          }
         }
       }
     }

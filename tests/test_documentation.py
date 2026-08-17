@@ -22,12 +22,12 @@ def maintained_markdown() -> list[Path]:
     ):
         files.extend(directory.rglob("*.md"))
     files.extend([
-        ROOT / "engine" / "shuohao-adapted" / "MODIFICATIONS.md",
-        ROOT / "engine" / "shuohao-adapted" / "skills" / "novel-storyboard" / "SKILL.md",
-        ROOT / "engine" / "shuohao-adapted" / "skills" / "novel-storyboard" / "README.md",
-        ROOT / "engine" / "shuohao-adapted" / "skills" / "novel-storyboard" / "README.en.md",
-        ROOT / "engine" / "shuohao-adapted" / "skills" / "novel-storyboard" / "references" / "schema.md",
-        ROOT / "engine" / "shuohao-adapted" / "skills" / "novel-storyboard" / "references" / "h3-prompt.md",
+        ROOT / "engine" / "kernels" / "MODIFICATIONS.md",
+        ROOT / "engine" / "kernels" / "skills" / "novel-storyboard" / "SKILL.md",
+        ROOT / "engine" / "kernels" / "skills" / "novel-storyboard" / "README.md",
+        ROOT / "engine" / "kernels" / "skills" / "novel-storyboard" / "README.en.md",
+        ROOT / "engine" / "kernels" / "skills" / "novel-storyboard" / "references" / "schema.md",
+        ROOT / "engine" / "kernels" / "skills" / "novel-storyboard" / "references" / "h3-prompt.md",
     ])
     return sorted({path for path in files if path.is_file() and ".forward-runs" not in path.parts})
 
@@ -87,7 +87,7 @@ class DocumentationContractTests(unittest.TestCase):
     def test_delivery_and_modification_notices_are_packaged(self):
         manifest = (ROOT / "skill-manifest.json").read_text(encoding="utf-8")
         self.assertTrue((ROOT / "shared" / "references" / "delivery-contract.md").is_file())
-        self.assertTrue((ROOT / "engine" / "shuohao-adapted" / "MODIFICATIONS.md").is_file())
+        self.assertTrue((ROOT / "engine" / "kernels" / "MODIFICATIONS.md").is_file())
         self.assertIn('"delivery-contract.md"', manifest)
         self.assertIn('"target": "THIRD_PARTY_NOTICES/shuohao-MODIFICATIONS.md"', manifest)
 

@@ -8,10 +8,10 @@
 - `shared/references/`
 - `scripts/`
 - `schemas/`
-- `engine/shuohao-runtime/`
-- `vendor/shuohao/` 中 manifest 指定文件
+- `engine/runtime/`
+- `vendor/kernels/` 中 manifest 指定文件
 
-`.agents/skills/` 是从上述规范源生成并受版本控制的标准安装面。不要手工编辑 `.agents/skills/` 或 `dist/`。不要把 `engine/shuohao-adapted/` 直接当发行 runtime；runtime 由 snapshot 同步生成。
+`.agents/skills/` 是从上述规范源生成并受版本控制的标准安装面。不要手工编辑 `.agents/skills/` 或 `dist/`。不要把 `engine/kernels/` 直接当发行 runtime；runtime 由 snapshot 同步生成。
 
 ## 验证顺序
 
@@ -19,7 +19,7 @@
 python -m unittest discover -s tests -p "test_*.py" -v
 python scripts/validate_project.py examples/synthetic-short
 python scripts/validate_project.py examples/legacy-yiqiyang
-python scripts/sync_shuohao_snapshot.py --source ../shuohao-skills-main --check
+python scripts/sync_kernel_snapshot.py --source ../shuohao-skills-main --check
 ```
 
 五套 adapted Node selftest 由 Python suite 覆盖，也可以单独运行对应 `selftest.mjs`。
@@ -64,4 +64,4 @@ python tests/verify_dist.py
 
 ## 第三方文件
 
-shuohao upstream snapshot 保持只读。发行包应同时包含 upstream LICENSE、NOTICE 和 Forging modification addendum。来源边界见 [PROVENANCE.md](../../PROVENANCE.md)。
+第三方内核 snapshot 保持只读。`THIRD_PARTY_LICENSES/` 与 `THIRD_PARTY_NOTICES/` 携带归属原文，来源边界见 [PROVENANCE.md](../../PROVENANCE.md)。

@@ -43,12 +43,22 @@ ARTIFACT_STAGE_BY_TYPE = {
     "scene-outline": "outline", "screenplay": "screenplay",
     "audit": "audit", "shot-plan": "shots", "storyboard": "shots",
     "short-drama-storyboard": "shots", "h3-export": "shots",
-    "short-drama-cast": "development", "short-drama-art": "assets", "engine-report": "development",
+    "short-drama-cast": "development", "short-drama-art": "assets",
     "storyboard-key": "shots", "storyboard-scene": "shots", "storyboard-detail": "shots",
     "locked-assets": "assets", "asset-report": "assets",
+    "generation-manifest": "shots", "delivery-manifest": "shots", "visual-delivery": "assets",
 }
 PROJECT_SINGLETON_TYPES = {"production-brief", "outline-skeleton", "series-outline", "scene-outline"}
 RANGED_TYPES = {"screenplay", "audit", "storyboard", "short-drama-storyboard", "shot-plan", "h3-export"}
+V1_CONFIRMATION_TYPES = {"production-brief", "outline-skeleton", "series-outline", "scene-outline", "screenplay"}
+
+
+def artifact_owning_stage(artifact: dict[str, Any]) -> str | None:
+    """Return the checkpoint stage that owns an artifact."""
+    if artifact.get("type") == "engine-report":
+        report_stage = artifact.get("report_stage")
+        return report_stage if report_stage in STAGES - {"intake", "complete"} else None
+    return ARTIFACT_STAGE_BY_TYPE.get(artifact.get("type"))
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -155,6 +165,12 @@ def commit_json(
     *,
     increment_revision: bool = True,
 ) -> None:
+    if STATE_FILE not in candidates and increment_revision:
+        state, state_baseline = load_candidate(args, STATE_FILE)
+        candidates = dict(candidates)
+        candidates[STATE_FILE] = state
+        baseline = dict(baseline)
+        baseline[STATE_FILE] = state_baseline[STATE_FILE]
     state = candidates.get(STATE_FILE)
     if increment_revision and state is not None and "project_revision" in state:
         revision = state["project_revision"]
@@ -202,6 +218,7 @@ def command_init(args: argparse.Namespace) -> None:
             "visual_style": "unspecified",
             "delivery_required": False,
             "prompt_context_required": True,
+            "episode_contract_required": False,
         },
         "sources": [],
         "artifacts": [],
@@ -277,6 +294,12 @@ def command_artifact(args: argparse.Namespace) -> None:
         "scope": parse_scope(args.scope),
         "sha256": digest,
     }
+    if args.type == "engine-report":
+        if args.report_stage is None:
+            raise ValueError("engine-report artifacts require --report-stage")
+        artifact["report_stage"] = args.report_stage
+    elif args.report_stage is not None:
+        raise ValueError("--report-stage is only valid for engine-report artifacts")
     audit_values = [
         args.p0_count, args.p1_count, args.p2_count,
         args.required_elements_total, args.required_elements_passed, args.audit_decision,
@@ -315,15 +338,17 @@ def command_artifact_status(args: argparse.Namespace) -> None:
         path = project_store(args).path(artifact["path"])
         if not path.is_file() or not artifact.get("sha256") or sha256(path) != artifact["sha256"]:
             raise ValueError("confirmed artifact requires a present file matching its registered sha256")
-        required_stage = ARTIFACT_STAGE_BY_TYPE.get(artifact.get("type"))
-        if artifact.get("type") in {"production-brief", "outline-skeleton", "series-outline", "scene-outline", "screenplay"}:
-            approved = any(
-                args.artifact_id in checkpoint.get("affects", [])
+        required_stage = artifact_owning_stage(artifact)
+        if required_stage and (
+            state.get("schema_version") == "2.0" or artifact.get("type") in V1_CONFIRMATION_TYPES
+        ):
+            rows = [
+                checkpoint for checkpoint in state["checkpoints"]
+                if args.artifact_id in checkpoint.get("affects", [])
                 and checkpoint.get("stage") == required_stage
-                and checkpoint.get("decision") in {"confirmed", "automatic"}
-                for checkpoint in state["checkpoints"]
-            )
-            if not approved:
+            ]
+            latest = max(rows, key=lambda item: item.get("sequence", 0), default=None)
+            if latest is None or latest.get("decision") not in {"confirmed", "automatic"}:
                 raise ValueError(f"{args.artifact_id} lacks an approving {required_stage} checkpoint")
         conflicting = []
         for item in state["artifacts"]:
@@ -350,6 +375,10 @@ def command_checkpoint(args: argparse.Namespace) -> None:
     state, baseline = load_candidate(args, STATE_FILE)
     if args.decision == "automatic" and state["configuration"].get("automatic_authorization") is not True:
         raise ValueError("automatic checkpoint requires project automatic_authorization")
+    if args.risk_acceptance and args.decision != "confirmed":
+        raise ValueError("risk acceptance is only valid for confirmed checkpoints")
+    if args.risk_acceptance and state.get("schema_version") != "2.0":
+        raise ValueError("risk acceptance requires a v2 project state")
     affects = split_csv(args.affects)
     if not affects:
         raise ValueError("checkpoint affects must be non-empty")
@@ -358,7 +387,7 @@ def command_checkpoint(args: argparse.Namespace) -> None:
     if missing:
         raise KeyError(f"checkpoint affects unknown artifacts: {sorted(missing)}")
     for artifact_id in affects:
-        expected = ARTIFACT_STAGE_BY_TYPE.get(artifacts[artifact_id].get("type"))
+        expected = artifact_owning_stage(artifacts[artifact_id])
         if expected and expected != args.stage:
             raise ValueError(f"checkpoint stage {args.stage} does not match {artifact_id} stage {expected}")
     checkpoint_id = next_id(state["checkpoints"], "checkpoint_id", "CHK")
@@ -370,6 +399,12 @@ def command_checkpoint(args: argparse.Namespace) -> None:
         "sequence": len(state["checkpoints"]) + 1,
         "affects": affects,
     }
+    if state.get("schema_version") == "2.0":
+        checkpoint["authorization_kind"] = (
+            "risk-acceptance" if args.risk_acceptance
+            else "automatic-policy" if args.decision == "automatic"
+            else "approval"
+        )
     state["checkpoints"].append(checkpoint)
     commit_json(args, {STATE_FILE: state}, baseline)
     print(checkpoint_id)
@@ -380,8 +415,14 @@ def command_stage(args: argparse.Namespace) -> None:
     if args.stage not in STAGES:
         raise ValueError(f"invalid stage: {args.stage}")
     state, baseline = load_candidate(args, STATE_FILE)
-    if args.stage == "complete" and (root / "short-drama-engine.json").exists():
-        raise ValueError("short-drama projects must enter complete through short_drama_cli.py complete")
+    if args.stage == "complete":
+        if (root / "short-drama-engine.json").exists():
+            raise ValueError("short-drama projects must enter complete through short_drama_cli.py complete")
+        raise ValueError("complete is a governed terminal stage; use a completion workflow")
+    current = state.get("stage")
+    order = ["intake", "development", "brief", "outline", "screenplay", "audit", "shots", "assets"]
+    if current in order and args.stage in order and order.index(args.stage) > order.index(current) + 1:
+        raise ValueError(f"stage cannot skip from {current} to {args.stage}")
     state["stage"] = args.stage
     commit_json(args, {STATE_FILE: state}, baseline)
     print(args.stage)
@@ -397,6 +438,8 @@ def command_configure(args: argparse.Namespace) -> None:
         project["target_runtime_ms"] = args.target_runtime_ms
     if args.format is not None:
         project["format"] = args.format
+        if args.format == "ai-short-drama-series":
+            configuration["episode_contract_required"] = True
     if args.scene_count is not None:
         if args.scene_count < 1 or args.scene_count > 999:
             raise ValueError("scene_count must be between 1 and 999")
@@ -415,9 +458,11 @@ def command_configure(args: argparse.Namespace) -> None:
             configuration[key] = value
     if args.automatic_authorization is not None:
         configuration["automatic_authorization"] = args.automatic_authorization == "true"
-    for key in ["delivery_required", "prompt_context_required"]:
+    for key in ["delivery_required", "prompt_context_required", "episode_contract_required"]:
         value = getattr(args, key)
         if value is not None:
+            if key == "episode_contract_required" and value == "false" and state.get("project", {}).get("format") == "ai-short-drama-series":
+                raise ValueError("governed short-drama projects cannot disable episode contracts")
             configuration[key] = value == "true"
     if args.dialogue_rate_chars_per_second is not None:
         if not 1 <= args.dialogue_rate_chars_per_second <= 20:
@@ -689,11 +734,23 @@ def command_migrate_project(args: argparse.Namespace) -> None:
             "visual_style": "unspecified",
             "delivery_required": False,
             "prompt_context_required": True,
+            "episode_contract_required": candidate.get("project", {}).get("format") == "ai-short-drama-series",
         }
         for key, value in configuration_defaults.items():
             if key not in configuration:
                 configuration[key] = value
                 changes.append({"field": f"configuration.{key}", "from": None, "to": value})
+        if (
+            candidate.get("project", {}).get("format") == "ai-short-drama-series"
+            and configuration.get("episode_contract_required") is not True
+        ):
+            previous = configuration.get("episode_contract_required")
+            configuration["episode_contract_required"] = True
+            changes.append({
+                "field": "configuration.episode_contract_required",
+                "from": previous,
+                "to": True,
+            })
         for source in candidate.get("sources", []):
             source_id = source.get("source_id", "unknown")
             if "trust_status" not in source:
@@ -702,6 +759,23 @@ def command_migrate_project(args: argparse.Namespace) -> None:
             if "rights" not in source:
                 source["rights"] = {"status": "unknown"}
                 changes.append({"field": f"sources.{source_id}.rights", "from": None, "to": {"status": "unknown"}})
+        for checkpoint in candidate.get("checkpoints", []):
+            if not isinstance(checkpoint, dict):
+                raise ValueError("cannot migrate v1 checkpoint that is not an object")
+            if not checkpoint.get("affects"):
+                raise ValueError(
+                    f"cannot migrate v1 checkpoint {checkpoint.get('checkpoint_id', 'unknown')} with empty affects"
+                )
+            if "authorization_kind" not in checkpoint:
+                decision = checkpoint.get("decision")
+                checkpoint["authorization_kind"] = (
+                    "automatic-policy" if decision == "automatic" else "approval"
+                )
+                changes.append({
+                    "field": f"checkpoints.{checkpoint.get('checkpoint_id', 'unknown')}.authorization_kind",
+                    "from": None,
+                    "to": checkpoint["authorization_kind"],
+                })
         for artifact in candidate.get("artifacts", []):
             if artifact.get("status") != "confirmed":
                 continue
@@ -803,6 +877,10 @@ def build_parser() -> argparse.ArgumentParser:
     artifact.add_argument("--depends-on", default="")
     artifact.add_argument("--source-refs", default="")
     artifact.add_argument("--scope")
+    artifact.add_argument(
+        "--report-stage",
+        choices=["development", "brief", "outline", "screenplay", "audit", "shots", "assets"],
+    )
     artifact.add_argument("--p0-count", type=int)
     artifact.add_argument("--p1-count", type=int)
     artifact.add_argument("--p2-count", type=int)
@@ -823,6 +901,7 @@ def build_parser() -> argparse.ArgumentParser:
     checkpoint.add_argument("--decision", choices=["confirmed", "revise", "automatic", "rejected"], required=True)
     checkpoint.add_argument("--authorization", required=True)
     checkpoint.add_argument("--affects", default="")
+    checkpoint.add_argument("--risk-acceptance", action="store_true")
     checkpoint.set_defaults(handler=command_checkpoint)
 
     stage = sub.add_parser("set-stage")
@@ -851,6 +930,7 @@ def build_parser() -> argparse.ArgumentParser:
     configure.add_argument("--visual-style")
     configure.add_argument("--delivery-required", choices=["true", "false"])
     configure.add_argument("--prompt-context-required", choices=["true", "false"])
+    configure.add_argument("--episode-contract-required", choices=["true", "false"])
     configure.set_defaults(handler=command_configure)
 
     allocate = sub.add_parser("allocate-id")

@@ -1,6 +1,6 @@
 ---
 name: ai-drama-short-drama-art
-description: Run the governed shuohao art kernel for scenes and narrative props, normalize safe styles, and import visual DNA and previews without locking assets. Use only when explicitly invoked or delegated by ai-drama-short-drama after a confirmed series outline.
+description: Run the governed art kernel for scenes and narrative props, normalize safe styles, and import visual DNA and previews without locking assets. Use only when explicitly invoked or delegated by ai-drama-short-drama after a confirmed series outline.
 ---
 
 # Short Drama Art Kernel
@@ -12,7 +12,7 @@ Run governed scene/prop concept development and import visual DNA plus optional 
 ## Prerequisites
 
 - Require a confirmed series outline and v2 governed project.
-- Read `references/short-drama-prompt-governance.md`, `references/shuohao/workflow.md`, and its scene, prop, schema, style, and sheet references.
+- Read `references/short-drama-prompt-governance.md`, `references/kernel/workflow.md`, and its scene, prop, schema, style, and sheet references.
 - Run `prompt-context --stage art --scope series`; require explicit prompt language, style, aspect ratio, and generator profile.
 
 ## Execution

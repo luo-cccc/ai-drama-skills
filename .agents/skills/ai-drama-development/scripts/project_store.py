@@ -179,7 +179,7 @@ def rollback_transaction(root: Path | str, transaction: Path | None = None) -> b
                 if not backup.is_file():
                     raise FileNotFoundError(f"missing transaction backup: {item['path']}")
                 target.parent.mkdir(parents=True, exist_ok=True)
-                os.replace(backup, target)
+                shutil.copy2(backup, target)
                 _fsync_directory(target.parent)
             else:
                 target.unlink(missing_ok=True)

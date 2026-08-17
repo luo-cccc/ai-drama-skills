@@ -26,6 +26,8 @@ Authorization is effective per artifact, not per stage or conversation. The effe
 
 Pause after direction, production brief, scene outline, and each screenplay revision unless the user explicitly authorized automatic continuation. Approval must bind exact artifact IDs through `affects`; vague permission to continue does not approve a later revision. An automatically confirmed screenplay requires a valid covering audit.
 
+Governed short-drama screenplays use a two-phase confirmation: `import-script` (without `--confirm`) registers a `pending-confirmation` candidate without superseding confirmed work or evolving hook/canon; then `confirm-screenplay` binds an audit prompt context plus an exact-target conformance audit and, in one transaction, confirms the screenplay and audit, supersedes the replaced revision, invalidates downstream, and evolves the governance snapshots. A `pending-confirmation` candidate is not an upstream and cannot authorize downstream work.
+
 Project-level briefs and outlines are singletons. Confirmed ranged artifacts must not overlap, except that a series audit or series shot plan may coexist with its episode-range inputs. Supersede an overlapping replacement before confirmation. A series audit and series aggregate must cover every episode without gaps.
 
 ## Delivery Tiers

@@ -1,6 +1,6 @@
 ---
 name: ai-drama-short-drama-characters
-description: Run the governed shuohao character-analysis kernel for a short-drama project, validate exact source evidence, and import cast JSON, reports, image prompts, and voice prompts into Forging asset candidates. Use only when explicitly invoked or when delegated by ai-drama-short-drama.
+description: Run the governed character-analysis kernel for a short-drama project, validate exact source evidence, and import cast JSON, reports, image prompts, and voice prompts into Forging asset candidates. Use only when explicitly invoked or when delegated by ai-drama-short-drama.
 ---
 
 # Short Drama Character Kernel
@@ -12,7 +12,7 @@ Run governed cast analysis and import stable cast candidates, source evidence, i
 ## Prerequisites
 
 - Require an attached v2 governed project and an available registered source.
-- Read `references/short-drama-prompt-governance.md`, `references/shuohao/workflow.md`, and its referenced character files.
+- Read `references/short-drama-prompt-governance.md`, `references/kernel/workflow.md`, and its referenced character files.
 - Run `prompt-context --stage characters --scope series`; require explicit prompt/dialogue language, style, aspect ratio, and candidate artifact.
 
 ## Execution

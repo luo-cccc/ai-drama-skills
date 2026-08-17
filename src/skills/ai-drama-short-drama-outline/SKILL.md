@@ -1,12 +1,12 @@
 ---
 name: ai-drama-short-drama-outline
-description: Run the governed shuohao outline kernel to create and import an outline skeleton checkpoint followed by a confirmed full series outline. Use only when explicitly invoked or delegated by ai-drama-short-drama for short-drama structure work.
+description: Run the governed outline kernel to create and import an outline skeleton checkpoint followed by a confirmed full series outline. Use only when explicitly invoked or delegated by ai-drama-short-drama for short-drama structure work.
 ---
 
 # Short Drama Outline Kernel
 
 1. Refuse work until a production brief is confirmed.
-2. Read `references/short-drama-prompt-governance.md`, `references/shuohao/workflow.md`, and all directly required files it names.
+2. Read `references/short-drama-prompt-governance.md`, `references/kernel/workflow.md`, and all directly required files it names.
 3. Run `prompt-context --stage outline --scope series` before each generation pass.
 4. Generate the fast skeleton first and pass the upstream `beats` validator.
 5. Present cuts, merged characters, and major payoff episode positions for user confirmation.

@@ -22,15 +22,15 @@
 ```bash
 PYTHONDONTWRITEBYTECODE=1 python -m unittest discover -s tests -p "test_*.py" -v
 
-node engine/shuohao-adapted/skills/novel-characters/scripts/selftest.mjs
-node engine/shuohao-adapted/skills/novel-outline/scripts/selftest.mjs
-node engine/shuohao-adapted/skills/novel-art/scripts/selftest.mjs
-node engine/shuohao-adapted/skills/novel-script/scripts/selftest.mjs
-node engine/shuohao-adapted/skills/novel-storyboard/scripts/selftest.mjs
+node engine/kernels/skills/novel-characters/scripts/selftest.mjs
+node engine/kernels/skills/novel-outline/scripts/selftest.mjs
+node engine/kernels/skills/novel-art/scripts/selftest.mjs
+node engine/kernels/skills/novel-script/scripts/selftest.mjs
+node engine/kernels/skills/novel-storyboard/scripts/selftest.mjs
 
 python scripts/validate_project.py examples/synthetic-short
 python scripts/validate_project.py examples/legacy-yiqiyang
-python scripts/sync_shuohao_snapshot.py --source ../shuohao-skills-main --check
+python scripts/sync_kernel_snapshot.py --source ../shuohao-skills-main --check
 python scripts/package_skills.py --output dist
 python tests/verify_dist.py --dist dist
 ```
@@ -52,8 +52,8 @@ Schema keyword lint 也对 `schemas/*.json` 全部执行。dist 构建到两个�
 
 ## Identities
 
-- `vendor/shuohao/snapshot-manifest.json` SHA-256: `02097a9e0afd0bce0f3dff9efea42f6307565bd29b5fc02aeee08a0f6a6e3822`
-- `.agents/skills/package-manifest.json` SHA-256: `b0ba71c78424d3df6075e629b13c15f37b0b65284e17ccffb1f32cd6f829436b`
+- `vendor/shuohao/snapshot-manifest.json` SHA-256: `88dd4e58d7d30a32eba6f62c7a766db42394445e097f8f48952cca37d42e31dd`
+- `.agents/skills/package-manifest.json` SHA-256: `217795ec4b9a6e08b94d6cdaa91b58a65016438969a91fcf02bfc95e2e17178c`
 
 The package manifest includes the shared delivery contract and, for every Skill carrying shuohao runtime material, upstream LICENSE, upstream NOTICE and the Forging modification addendum.
 

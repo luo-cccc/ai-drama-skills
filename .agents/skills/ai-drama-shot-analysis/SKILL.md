@@ -28,7 +28,7 @@ description: 对真实视频、视频片段或带时长的有序描述执行逐�
 
 - 实证模式：schema-valid `shot-analysis-vNNN.json` 与派生 Markdown。
 - 估算/未知模式：明确限制的报告，不冒充真实 media audit。
-- Tier 1：结构化分析与证据报告；Tier 2/3 仅在用户另行要求生成包或交付 media 时由对应 storyboard/delivery workflows 创建。
+- 结构化分析与证据报告；生成包或交付 media 仅在用户另行要求时由对应 storyboard/delivery workflows 创建（交付层级是项目级状态，见 `delivery-contract.md`）。
 
 ## Gates
 

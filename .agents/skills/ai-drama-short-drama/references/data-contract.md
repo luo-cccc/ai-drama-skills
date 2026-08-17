@@ -7,6 +7,8 @@ JSON is canonical for project state, audit, assets, continuity, timed shots, gen
 - `project-state.json`: schema v2 project metadata, configuration, sources, artifact graph, checkpoints, and `project_revision`.
 - `asset-manifest.json`: operational asset registry. New projects currently initialize and mutate schema v1.
 - `continuity-ledger.json`: operational continuity event ledger. Its current schema is v1.
+- `hook-ledger.json` and `canon.json`: machine-maintained root projections for governed short-drama projects. Their authoritative bytes are immutable versioned snapshots `short-drama/governance/hook-ledger-vNNN.json` and `canon-vNNN.json`, registered as `hook-ledger` / `canon` artifacts; the root files must stay byte-identical to the current snapshot. `short-drama-engine.canonical_state` binds each snapshot artifact ID, path, SHA-256, revision, and derivation source.
+- `canon-register-vNNN.json`: immutable inputs for each `canon register` operation, registered as `canon-register` artifacts so the canon history can be replayed deterministically.
 - scoped `shot-plan-vNNN.json`: canonical episode-range shot plans.
 - series `shot-plan-vNNN.json`: immutable canonical series aggregate registered as a `shot-plan` artifact.
 - root `shot-plan.json`: replaceable projection of the current series aggregate; its bytes and SHA-256 must match the immutable registered snapshot.
@@ -15,6 +17,21 @@ JSON is canonical for project state, audit, assets, continuity, timed shots, gen
 - `delivery-manifest-vNNN.json`: declared delivery contents, hashes, dimensions, durations, and QC states.
 
 Write UTF-8 JSON with two-space indentation and a final newline. Use the project CLIs for mutation and atomic commit. Validate after every material update.
+
+## Governance Snapshots
+
+The suspense ledger and canon are machine-maintained, and their history is immutable. Each mutation — hook seeding at confirmed series outline import, hook/canon evolution at confirmed screenplay import, canon register, and canon refresh — writes a versioned snapshot under `short-drama/governance/` and registers it as a `confirmed` `hook-ledger` / `canon` artifact. The previous snapshot of the same type is superseded; the root `hook-ledger.json` / `canon.json` remains a byte-identical projection of the current snapshot.
+
+`short-drama-engine.canonical_state` records, for each of `hook_ledger` and `canon`, the current snapshot `artifact_id`, `snapshot_path`, `projection_path`, `sha256`, `revision`, and `depends_on`. The validator enforces that snapshot artifact, projection bytes, engine ref, and SHA-256 all agree, and it deterministically replays the derivation chain from confirmed inputs:
+
+- hook ledger: seed from the confirmed series outline, then apply each confirmed screenplay in episode order;
+- canon: walk snapshots in revision order, applying `merge_registered_canon` for a `canon-register` dependency, `derive_canon_updates` for a `screenplay` dependency, and `refresh_canon` otherwise.
+
+A missing binding, a tampered snapshot or projection, or a derivation mismatch fails validation. `rebuild-governance --hook`/`--canon` deterministically rebuilds the hook ledger (and re-binds the canon projection) when state is missing or drifted.
+
+## Episode Contract
+
+Governed v2 short-drama projects with `episode_contract_required: true` embed a per-episode `contract` object in each screenplay batch JSON (`schemas/episode-contract.schema.json`). The contract rides with the screenplay file — one artifact, one scope, one SHA-256 binding — and is never a standalone canonical file. Its `handoffState` deterministically feeds the next batch's `previous_handoff` section in the script-stage prompt context; incoming state is a continuity boundary, not a creative choice.
 
 ## Versions And Migration
 

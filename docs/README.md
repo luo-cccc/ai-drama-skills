@@ -22,4 +22,4 @@
 4. 本目录的操作示例。
 5. `examples/`、历史报告和生成输出。
 
-`.agents/skills/` 是受版本控制的标准安装面，`dist/` 是可选临时构建，`engine/shuohao-runtime/` 是同步结果，`vendor/shuohao/upstream/` 是只读来源快照；它们都不是独立文档所有者。
+`.agents/skills/` 是受版本控制的标准安装面，`dist/` 是可选临时构建，`engine/runtime/` 是同步结果，`vendor/kernels/` 是只读来源快照；它们都不是独立文档所有者。

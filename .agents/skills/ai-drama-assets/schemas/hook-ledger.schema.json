@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.ai-drama-forging/schemas/hook-ledger.schema.json",
+  "title": "AI Drama Forging Hook Ledger",
+  "type": "object",
+  "required": ["schema_version", "project_id", "ledger_version", "hooks"],
+  "properties": {
+    "schema_version": {"enum": ["1.0"]},
+    "project_id": {"type": "string", "pattern": "^PROJECT-[0-9]{3}$"},
+    "ledger_version": {"type": "integer", "minimum": 1},
+    "hooks": {"type": "array", "items": {"$ref": "#/$defs/hook"}}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "hook": {
+      "type": "object",
+      "required": [
+        "hook_id",
+        "name",
+        "kind",
+        "status",
+        "planted_episode",
+        "last_advanced_episode",
+        "timing",
+        "evidence_history"
+      ],
+      "properties": {
+        "hook_id": {"type": "string", "pattern": "^H-[0-9]{3}$"},
+        "name": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["plot", "emotion"]},
+        "status": {"enum": ["open", "progressing", "deferred", "resolved"]},
+        "planted_episode": {"type": "integer", "minimum": 1},
+        "last_advanced_episode": {"type": "integer", "minimum": 1},
+        "timing": {"enum": ["immediate", "near-term", "mid-arc", "slow-burn", "endgame"]},
+        "target_payoff_episode": {"type": ["integer", "null"], "minimum": 1},
+        "expected_payoff": {"type": ["string", "null"]},
+        "resolved_episode": {"type": ["integer", "null"], "minimum": 1},
+        "core": {"type": "boolean"},
+        "evidence_history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["episode", "action"],
+            "properties": {
+              "episode": {"type": "integer", "minimum": 1},
+              "action": {"enum": ["open", "advance", "resolve", "defer"]},
+              "carriers": {"type": "array", "maxItems": 3, "uniqueItems": true, "items": {"type": "string", "minLength": 1}, "default": []},
+              "note": {"type": ["string", "null"]}
+            },
+            "allOf": [
+              {
+                "if": {"properties": {"action": {"enum": ["advance", "resolve"]}}, "required": ["action"]},
+                "then": {"required": ["carriers"], "properties": {"carriers": {"minItems": 1, "maxItems": 3}}}
+              }
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

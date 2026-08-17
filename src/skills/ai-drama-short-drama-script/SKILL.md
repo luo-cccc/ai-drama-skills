@@ -1,6 +1,6 @@
 ---
 name: ai-drama-short-drama-script
-description: Run the governed shuohao screenplay kernel in contiguous batches of at most three episodes, validate against confirmed upstream structure, create a scoped evidence audit, and record the screenplay checkpoint. Use only when explicitly invoked or delegated by ai-drama-short-drama.
+description: Run the governed screenplay kernel in contiguous batches of at most three episodes, validate against confirmed upstream structure, create a scoped evidence audit, and record the screenplay checkpoint. Use only when explicitly invoked or delegated by ai-drama-short-drama.
 ---
 
 # Short Drama Screenplay Kernel
@@ -13,7 +13,7 @@ Generate one governed contiguous screenplay batch and pair it with a canonical s
 
 - Require a v2 governed project and confirmed series outline.
 - Import without `--confirm` only creates a `pending-confirmation` candidate; it does not supersede confirmed work or evolve hook/canon. Generate `prompt-context --stage audit`, then run `confirm-screenplay --screenplay ART-NNN --audit-report audit.json` for the atomic confirmation path.
-- Read `references/short-drama-prompt-governance.md`, `references/episode-drama-contract.md`, `references/shuohao/workflow.md`, script pass, schema, and shared evidence contract.
+- Read `references/short-drama-prompt-governance.md`, `references/episode-drama-contract.md`, `references/kernel/workflow.md`, script pass, schema, and shared evidence contract.
 - Run `prompt-context --stage script --scope START-END`; require explicit languages, target runtime, episode duration, and candidate artifact. When the scope does not start at episode 1, the context carries `previous_handoff`.
 
 ## Execution

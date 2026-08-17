@@ -29,7 +29,7 @@ visual_layout = load_module("visual_layout_cli", SCRIPTS / "visual_layout_cli.py
 short_drama = load_module("short_drama_cli", SCRIPTS / "short_drama_cli.py")
 project_store = load_module("project_store", SCRIPTS / "project_store.py")
 schema_validator = load_module("schema_validator", SCRIPTS / "schema_validator.py")
-snapshot_sync = load_module("sync_shuohao_snapshot", SCRIPTS / "sync_shuohao_snapshot.py")
+snapshot_sync = load_module("sync_kernel_snapshot", SCRIPTS / "sync_kernel_snapshot.py")
 
 
 class SkillSuiteTests(unittest.TestCase):
@@ -91,12 +91,12 @@ class SkillSuiteTests(unittest.TestCase):
                 for schema in manifest_entry.get("schemas", []):
                     self.assertTrue((skill / "schemas" / schema).is_file(), f"{skill.name} is missing {schema}")
                 if skill.name.startswith("ai-drama-short-drama"):
-                    self.assertTrue((skill / "engine" / "shuohao-runtime" / "FORGING-ADAPTATION.json").is_file())
+                    self.assertTrue((skill / "engine" / "runtime" / "FORGING-ADAPTATION.json").is_file())
                     self.assertTrue((skill / "THIRD_PARTY_LICENSES" / "shuohao-LICENSE").is_file())
                     self.assertTrue((skill / "THIRD_PARTY_NOTICES" / "shuohao-NOTICE").is_file())
                     self.assertTrue((skill / "THIRD_PARTY_NOTICES" / "shuohao-MODIFICATIONS.md").is_file())
                 if skill.name.startswith("ai-drama-short-drama-"):
-                    self.assertTrue((skill / "references" / "shuohao" / "workflow.md").is_file())
+                    self.assertTrue((skill / "references" / "kernel" / "workflow.md").is_file())
                     self.assertTrue((skill / "references" / "short-drama-prompt-governance.md").is_file())
 
     def test_standard_skills_repository_matches_canonical_build(self):
@@ -574,27 +574,36 @@ class SkillSuiteTests(unittest.TestCase):
             destination.mkdir()
             snapshot_sync.apply_adapted_overlays(destination)
             for relative in snapshot_sync.ADAPTED_OVERLAY_FILES:
-                source = ROOT / "engine" / "shuohao-adapted" / relative
+                source = ROOT / "engine" / "kernels" / relative
                 copied = destination / relative
                 self.assertTrue(copied.is_file(), relative)
                 self.assertEqual(source.read_bytes(), copied.read_bytes(), relative)
 
-    def test_shuohao_snapshot_check(self):
-        manifest = json.loads((ROOT / "vendor" / "shuohao" / "snapshot-manifest.json").read_text(encoding="utf-8"))
-        runtime = ROOT / "engine" / "shuohao-runtime"
+    def test_kernel_snapshot_check(self):
+        manifest = json.loads((ROOT / "vendor" / "kernels" / "snapshot-manifest.json").read_text(encoding="utf-8"))
+        runtime = ROOT / "engine" / "runtime"
         actual = {
             path.relative_to(runtime).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
             for path in runtime.rglob("*") if path.is_file()
         }
         self.assertEqual(manifest["runtime_files"], actual)
-        adapted = ROOT / "engine" / "shuohao-adapted" / "skills"
+        adapted = ROOT / "engine" / "kernels" / "skills"
         for skill in manifest["skills"]:
             subprocess.run([
                 "node", str(adapted / skill / "scripts" / "selftest.mjs"),
             ], check=True, capture_output=True, text=True)
 
+    def test_novel_script_checkup_reports_craft_hints(self):
+        script = ROOT / "engine" / "kernels" / "skills" / "novel-script" / "scripts" / "novel-script.mjs"
+        fixture = ROOT / "engine" / "kernels" / "skills" / "novel-script" / "examples" / "渡口-script.json"
+        completed = subprocess.run(["node", str(script), "checkup", str(fixture)], capture_output=True, text=True)
+        self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
+        self.assertIn("写稿手感", completed.stdout)
+        self.assertIn("delivery 写可执行策略，不写情绪词", completed.stdout)
+        self.assertIn("淡淡地", completed.stdout)
+
     def test_dukou_governed_pipeline_through_scoped_storyboard(self):
-        engine_root = ROOT / "engine" / "shuohao-adapted" / "skills"
+        engine_root = ROOT / "engine" / "kernels" / "skills"
         with tempfile.TemporaryDirectory() as temp:
             project = Path(temp) / "dukou"
             run_state = lambda *items: subprocess.run(
@@ -862,7 +871,7 @@ class SkillSuiteTests(unittest.TestCase):
             self.assertFalse((project / ".short-drama-transaction").exists())
 
     def test_vendor_source_requires_license(self):
-        sync = load_module("sync_shuohao_snapshot", SCRIPTS / "sync_shuohao_snapshot.py")
+        sync = load_module("sync_kernel_snapshot", SCRIPTS / "sync_kernel_snapshot.py")
         source = ROOT.parent / "shuohao-skills-main"
         with tempfile.TemporaryDirectory() as temp:
             broken = Path(temp) / "source"

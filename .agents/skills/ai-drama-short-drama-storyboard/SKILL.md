@@ -1,6 +1,6 @@
 ---
 name: ai-drama-short-drama-storyboard
-description: Run the governed shuohao H3 storyboard kernel for an audited screenplay range, preserve exact prompt alignment, and convert every cut into model-neutral Forging beats and shots on an absolute series timeline. Use only when explicitly invoked or delegated by ai-drama-short-drama.
+description: Run the governed H3 storyboard kernel for an audited screenplay range, preserve exact prompt alignment, and convert every cut into model-neutral Forging beats and shots on an absolute series timeline. Use only when explicitly invoked or delegated by ai-drama-short-drama.
 ---
 
 # Short Drama Storyboard Kernel
@@ -12,7 +12,7 @@ Run the adapted H3 storyboard kernel inside Forging governance and import its en
 ## Prerequisites
 
 - Require v2 governed project state, an attached short-drama engine, and a confirmed screenplay plus valid canonical audit with the exact same episode scope.
-- Read `references/short-drama-prompt-governance.md`, `references/shuohao/workflow.md`, and its frame, H3 prompt, schema, and storyboard-pass references.
+- Read `references/short-drama-prompt-governance.md`, `references/kernel/workflow.md`, and its frame, H3 prompt, schema, and storyboard-pass references.
 - Run `prompt-context --stage storyboard --scope START-END` before generation.
 
 ## Execution

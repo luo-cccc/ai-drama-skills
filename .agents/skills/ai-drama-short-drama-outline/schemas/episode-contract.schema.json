@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.ai-drama-forging/schemas/episode-contract.schema.json",
+  "title": "AI Drama Forging Episode Contract",
+  "type": "object",
+  "required": [
+    "incomingState",
+    "objective",
+    "opposition",
+    "causalEscalation",
+    "localDramaticResult",
+    "outgoingPressure",
+    "handoffState",
+    "informationPermissions",
+    "emotionalHook",
+    "endState",
+    "hookActions"
+  ],
+  "properties": {
+    "incomingState": {"$ref": "#/$defs/stateBucket"},
+    "objective": {"$ref": "#/$defs/objective"},
+    "opposition": {"$ref": "#/$defs/opposition"},
+    "causalEscalation": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/causalStep"}},
+    "localDramaticResult": {"$ref": "#/$defs/localResult"},
+    "outgoingPressure": {"$ref": "#/$defs/outgoingPressure"},
+    "handoffState": {"$ref": "#/$defs/stateBucket"},
+    "informationPermissions": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/informationPermission"}},
+    "emotionalHook": {"type": "string", "minLength": 1},
+    "endState": {"type": "string", "minLength": 1},
+    "hookActions": {"type": "array", "items": {"$ref": "#/$defs/hookAction"}}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "stringArray": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "stateBucket": {
+      "type": "object",
+      "required": ["knowledge", "power", "relationship", "physical", "activeAction"],
+      "properties": {
+        "knowledge": {"$ref": "#/$defs/stringArray"},
+        "power": {"$ref": "#/$defs/stringArray"},
+        "relationship": {"$ref": "#/$defs/stringArray"},
+        "physical": {"$ref": "#/$defs/stringArray"},
+        "activeAction": {"$ref": "#/$defs/stringArray"},
+        "emotional": {"type": "array", "items": {"type": "string", "minLength": 1}, "default": []}
+      },
+      "additionalProperties": false
+    },
+    "objective": {
+      "type": "object",
+      "required": ["character", "desiredChange", "whyNow"],
+      "properties": {
+        "character": {"type": "string", "minLength": 1},
+        "desiredChange": {"type": "string", "minLength": 1},
+        "whyNow": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "opposition": {
+      "type": "object",
+      "required": ["actorOrConstraint", "goal", "leverage"],
+      "properties": {
+        "actorOrConstraint": {"type": "string", "minLength": 1},
+        "goal": {"type": "string", "minLength": 1},
+        "leverage": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "causalStep": {
+      "type": "object",
+      "required": ["becauseOf", "choice", "countermove", "stateChange", "nextPressure"],
+      "properties": {
+        "becauseOf": {"type": "string", "minLength": 1},
+        "choice": {"type": "string", "minLength": 1},
+        "countermove": {"type": "string", "minLength": 1},
+        "stateChange": {"type": "string", "minLength": 1},
+        "nextPressure": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "localResult": {
+      "type": "object",
+      "required": ["goalOutcome", "stateChange", "costPaid"],
+      "properties": {
+        "goalOutcome": {"type": "string", "minLength": 1},
+        "stateChange": {"type": "string", "minLength": 1},
+        "costPaid": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "outgoingPressure": {
+      "type": "object",
+      "required": ["startedDecisionDangerOrQuestion", "whyItFollows"],
+      "properties": {
+        "startedDecisionDangerOrQuestion": {"type": "string", "minLength": 1},
+        "whyItFollows": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "informationPermission": {
+      "type": "object",
+      "required": ["subject", "audience", "known", "suspected", "mistaken", "unknown"],
+      "properties": {
+        "subject": {"type": "string", "minLength": 1},
+        "audience": {"type": "string", "minLength": 1},
+        "known": {"$ref": "#/$defs/stringArray"},
+        "suspected": {"$ref": "#/$defs/stringArray"},
+        "mistaken": {"$ref": "#/$defs/stringArray"},
+        "unknown": {"$ref": "#/$defs/stringArray"}
+      },
+      "additionalProperties": false
+    },
+    "hookAction": {
+      "type": "object",
+      "required": ["hookId", "action", "description", "evidence"],
+      "properties": {
+        "hookId": {"type": "string", "minLength": 1},
+        "action": {"enum": ["open", "advance", "resolve", "defer"]},
+        "description": {"type": "string", "minLength": 1},
+        "evidence": {"type": "array", "maxItems": 3, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"action": {"enum": ["advance", "resolve"]}}, "required": ["action"]},
+          "then": {"properties": {"evidence": {"minItems": 1, "maxItems": 3}}}
+        }
+      ],
+      "additionalProperties": false
+    }
+  }
+}

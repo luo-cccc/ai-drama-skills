@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Attach and operate the governed shuohao short-drama execution engine."""
+"""Attach and operate the governed short-drama execution engine."""
 
 from __future__ import annotations
 
@@ -32,8 +32,8 @@ except ModuleNotFoundError:
 
 
 ROOT = Path(__file__).resolve().parents[1]
-ADAPTED = ROOT / "engine" / "shuohao-runtime"
-SNAPSHOT_MANIFEST = ROOT / "vendor" / "shuohao" / "snapshot-manifest.json"
+ADAPTED = ROOT / "engine" / "runtime"
+SNAPSHOT_MANIFEST = ROOT / "vendor" / "kernels" / "snapshot-manifest.json"
 ENGINE_FILE = "short-drama-engine.json"
 TX_DIR = TRANSACTION_DIR
 SAFE_STYLE = {"realistic": "realistic", "ghibli": "hand-painted-cel", "hand-painted-cel": "hand-painted-cel"}

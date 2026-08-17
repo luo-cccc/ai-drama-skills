@@ -11,7 +11,7 @@
     "project_revision": {"type": "integer", "minimum": 0},
     "scope": {"$ref": "#/$defs/scope"},
     "candidate_artifact_id": {"type": "string", "pattern": "^ART-[0-9]{3}$"},
-    "stage": {"enum": ["characters", "outline", "art", "script", "storyboard"]},
+    "stage": {"enum": ["characters", "outline", "art", "script", "audit", "storyboard"]},
     "profile": {
       "type": "object",
       "required": ["report_language", "prompt_language", "dialogue_language", "visual_style", "aspect_ratio", "target_runtime_ms", "generator", "audio_policy", "subtitle_policy", "clip_max_duration_ms", "exact_storyboard_timing", "delivery_required"],
@@ -67,6 +67,98 @@
     },
     "engine_snapshot": {"type": "object"},
     "expected_output_schema": {"type": "string", "minLength": 1},
+    "audit_targets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["artifact_id", "path", "sha256"],
+        "properties": {
+          "artifact_id": {"type": "string", "pattern": "^ART-[0-9]{3}$"},
+          "path": {"type": "string", "minLength": 1},
+          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "previous_handoff": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "required": ["source_artifact_id", "sha256", "handoff_state"],
+          "properties": {
+            "source_artifact_id": {"type": "string", "pattern": "^ART-[0-9]{3}$"},
+            "sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+            "handoff_state": {"type": "object"}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "hook_ledger": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "required": ["sha256", "hooks"],
+          "properties": {
+            "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+            "hooks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["hook_id", "name", "kind", "status", "planted_episode", "last_advanced_episode", "timing"],
+                "properties": {
+                  "hook_id": {"type": "string", "pattern": "^H-[0-9]{3}$"},
+                  "name": {"type": "string", "minLength": 1},
+                  "kind": {"enum": ["plot", "emotion"]},
+                  "status": {"enum": ["open", "progressing", "deferred", "resolved"]},
+                  "planted_episode": {"type": "integer", "minimum": 1},
+                  "last_advanced_episode": {"type": "integer", "minimum": 1},
+                  "timing": {"enum": ["immediate", "near-term", "mid-arc", "slow-burn", "endgame"]},
+                  "target_payoff_episode": {"type": ["integer", "null"], "minimum": 1},
+                  "expected_payoff": {"type": ["string", "null"]}
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "canon": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "required": ["sha256", "claims"],
+          "properties": {
+            "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+            "claims": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["claim_id", "claim_type", "content", "priority", "reader_known_from", "status"],
+                "properties": {
+                  "claim_id": {"type": "string", "pattern": "^CAN-[0-9]{3}$"},
+                  "claim_type": {"type": "string", "minLength": 1},
+                  "content": {"type": "string", "minLength": 1},
+                  "priority": {"enum": ["hard", "strong", "soft"]},
+                  "reader_known_from": {"type": ["integer", "null"], "minimum": 1},
+                  "status": {"enum": ["active", "resolved", "superseded"]},
+                  "requires_cost": {"type": "array", "items": {"type": "string", "minLength": 1}, "default": []},
+                  "forbidden_uses": {"type": "array", "items": {"type": "string", "minLength": 1}, "default": []}
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "must_not_modify": {"type": "array", "items": {"type": "string", "pattern": "^ART-[0-9]{3}$"}, "uniqueItems": true},
     "capabilities": {"type": "object", "additionalProperties": {"type": ["string", "boolean"]}},
     "evidence_requirements": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true}

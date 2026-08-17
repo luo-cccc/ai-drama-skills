@@ -68,6 +68,14 @@
       },
       "additionalProperties": false
     },
+    "canonical_state": {
+      "type": "object",
+      "properties": {
+        "hook_ledger": {"$ref": "#/$defs/canonical_ref"},
+        "canon": {"$ref": "#/$defs/canonical_ref"}
+      },
+      "additionalProperties": false
+    },
     "aggregate": {
       "type": "object",
       "required": ["shot_plan_path", "scope"],
@@ -110,6 +118,19 @@
   ],
   "additionalProperties": false,
   "$defs": {
+    "canonical_ref": {
+      "type": "object",
+      "required": ["projection_path", "sha256", "revision"],
+      "properties": {
+        "artifact_id": {"type": "string", "pattern": "^ART-[0-9]{3}$"},
+        "projection_path": {"type": "string", "minLength": 1},
+        "snapshot_path": {"type": ["string", "null"]},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "revision": {"type": "integer", "minimum": 1},
+        "depends_on": {"type": "array", "items": {"type": "string", "pattern": "^ART-[0-9]{3}$"}, "uniqueItems": true}
+      },
+      "additionalProperties": false
+    },
     "asset_mapping": {
       "type": "object",
       "required": ["upstream_id", "forging_id", "name", "status"],

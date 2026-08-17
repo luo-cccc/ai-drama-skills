@@ -28,7 +28,7 @@ Extract reusable production assets and causally critical one-use props. Maintain
 
 - Canonical `asset-manifest.json` and versioned human-readable `asset-dna-vNNN.md` derivative.
 - Unresolved confirmations, stale-lock notices, and exact upstream dependencies.
-- Prompt-ready briefs may support Tier 1 planning, but assets reach Tier 3 only through separate visual generation, manifest registration, and QC.
+- Prompt-ready briefs may support planning, but assets become delivered media only through separate visual generation, manifest registration, and QC. Delivery tier labels are project-level states in `delivery-contract.md`.
 
 ## Gates
 

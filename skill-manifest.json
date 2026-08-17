@@ -296,71 +296,71 @@
       ],
       "vendor_files": [
         {
-          "source": "engine/shuohao-runtime",
-          "target": "engine/shuohao-runtime"
+          "source": "engine/runtime",
+          "target": "engine/runtime"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-characters/SKILL.md",
-          "target": "references/shuohao/novel-characters/workflow.md"
+          "source": "engine/kernels/skills/novel-characters/SKILL.md",
+          "target": "references/kernel/novel-characters/workflow.md"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-characters/references",
-          "target": "references/shuohao/novel-characters/references"
+          "source": "engine/kernels/skills/novel-characters/references",
+          "target": "references/kernel/novel-characters/references"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-outline/SKILL.md",
-          "target": "references/shuohao/novel-outline/workflow.md"
+          "source": "engine/kernels/skills/novel-outline/SKILL.md",
+          "target": "references/kernel/novel-outline/workflow.md"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-outline/references",
-          "target": "references/shuohao/novel-outline/references"
+          "source": "engine/kernels/skills/novel-outline/references",
+          "target": "references/kernel/novel-outline/references"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-art/SKILL.md",
-          "target": "references/shuohao/novel-art/workflow.md"
+          "source": "engine/kernels/skills/novel-art/SKILL.md",
+          "target": "references/kernel/novel-art/workflow.md"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-art/references",
-          "target": "references/shuohao/novel-art/references"
+          "source": "engine/kernels/skills/novel-art/references",
+          "target": "references/kernel/novel-art/references"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-script/SKILL.md",
-          "target": "references/shuohao/novel-script/workflow.md"
+          "source": "engine/kernels/skills/novel-script/SKILL.md",
+          "target": "references/kernel/novel-script/workflow.md"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-script/references",
-          "target": "references/shuohao/novel-script/references"
+          "source": "engine/kernels/skills/novel-script/references",
+          "target": "references/kernel/novel-script/references"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-storyboard/SKILL.md",
-          "target": "references/shuohao/novel-storyboard/workflow.md"
+          "source": "engine/kernels/skills/novel-storyboard/SKILL.md",
+          "target": "references/kernel/novel-storyboard/workflow.md"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-storyboard/references",
-          "target": "references/shuohao/novel-storyboard/references"
+          "source": "engine/kernels/skills/novel-storyboard/references",
+          "target": "references/kernel/novel-storyboard/references"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-storyboard/README.md",
-          "target": "references/shuohao/novel-storyboard/README.md"
+          "source": "engine/kernels/skills/novel-storyboard/README.md",
+          "target": "references/kernel/novel-storyboard/README.md"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-storyboard/README.en.md",
-          "target": "references/shuohao/novel-storyboard/README.en.md"
+          "source": "engine/kernels/skills/novel-storyboard/README.en.md",
+          "target": "references/kernel/novel-storyboard/README.en.md"
         },
         {
-          "source": "vendor/shuohao/snapshot-manifest.json",
-          "target": "vendor/shuohao/snapshot-manifest.json"
+          "source": "vendor/kernels/snapshot-manifest.json",
+          "target": "vendor/kernels/snapshot-manifest.json"
         },
         {
-          "source": "vendor/shuohao/upstream/LICENSE",
+          "source": "vendor/kernels/upstream/LICENSE",
           "target": "THIRD_PARTY_LICENSES/shuohao-LICENSE"
         },
         {
-          "source": "vendor/shuohao/upstream/NOTICE",
+          "source": "vendor/kernels/upstream/NOTICE",
           "target": "THIRD_PARTY_NOTICES/shuohao-NOTICE"
         },
         {
-          "source": "engine/shuohao-adapted/MODIFICATIONS.md",
+          "source": "engine/kernels/MODIFICATIONS.md",
           "target": "THIRD_PARTY_NOTICES/shuohao-MODIFICATIONS.md"
         }
       ]
@@ -397,31 +397,31 @@
       ],
       "vendor_files": [
         {
-          "source": "engine/shuohao-runtime",
-          "target": "engine/shuohao-runtime"
+          "source": "engine/runtime",
+          "target": "engine/runtime"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-characters/SKILL.md",
-          "target": "references/shuohao/workflow.md"
+          "source": "engine/kernels/skills/novel-characters/SKILL.md",
+          "target": "references/kernel/workflow.md"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-characters/references",
-          "target": "references/shuohao/references"
+          "source": "engine/kernels/skills/novel-characters/references",
+          "target": "references/kernel/references"
         },
         {
-          "source": "vendor/shuohao/snapshot-manifest.json",
-          "target": "vendor/shuohao/snapshot-manifest.json"
+          "source": "vendor/kernels/snapshot-manifest.json",
+          "target": "vendor/kernels/snapshot-manifest.json"
         },
         {
-          "source": "vendor/shuohao/upstream/LICENSE",
+          "source": "vendor/kernels/upstream/LICENSE",
           "target": "THIRD_PARTY_LICENSES/shuohao-LICENSE"
         },
         {
-          "source": "vendor/shuohao/upstream/NOTICE",
+          "source": "vendor/kernels/upstream/NOTICE",
           "target": "THIRD_PARTY_NOTICES/shuohao-NOTICE"
         },
         {
-          "source": "engine/shuohao-adapted/MODIFICATIONS.md",
+          "source": "engine/kernels/MODIFICATIONS.md",
           "target": "THIRD_PARTY_NOTICES/shuohao-MODIFICATIONS.md"
         }
       ]
@@ -460,31 +460,31 @@
       ],
       "vendor_files": [
         {
-          "source": "engine/shuohao-runtime",
-          "target": "engine/shuohao-runtime"
+          "source": "engine/runtime",
+          "target": "engine/runtime"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-outline/SKILL.md",
-          "target": "references/shuohao/workflow.md"
+          "source": "engine/kernels/skills/novel-outline/SKILL.md",
+          "target": "references/kernel/workflow.md"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-outline/references",
-          "target": "references/shuohao/references"
+          "source": "engine/kernels/skills/novel-outline/references",
+          "target": "references/kernel/references"
         },
         {
-          "source": "vendor/shuohao/snapshot-manifest.json",
-          "target": "vendor/shuohao/snapshot-manifest.json"
+          "source": "vendor/kernels/snapshot-manifest.json",
+          "target": "vendor/kernels/snapshot-manifest.json"
         },
         {
-          "source": "vendor/shuohao/upstream/LICENSE",
+          "source": "vendor/kernels/upstream/LICENSE",
           "target": "THIRD_PARTY_LICENSES/shuohao-LICENSE"
         },
         {
-          "source": "vendor/shuohao/upstream/NOTICE",
+          "source": "vendor/kernels/upstream/NOTICE",
           "target": "THIRD_PARTY_NOTICES/shuohao-NOTICE"
         },
         {
-          "source": "engine/shuohao-adapted/MODIFICATIONS.md",
+          "source": "engine/kernels/MODIFICATIONS.md",
           "target": "THIRD_PARTY_NOTICES/shuohao-MODIFICATIONS.md"
         }
       ]
@@ -521,31 +521,31 @@
       ],
       "vendor_files": [
         {
-          "source": "engine/shuohao-runtime",
-          "target": "engine/shuohao-runtime"
+          "source": "engine/runtime",
+          "target": "engine/runtime"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-art/SKILL.md",
-          "target": "references/shuohao/workflow.md"
+          "source": "engine/kernels/skills/novel-art/SKILL.md",
+          "target": "references/kernel/workflow.md"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-art/references",
-          "target": "references/shuohao/references"
+          "source": "engine/kernels/skills/novel-art/references",
+          "target": "references/kernel/references"
         },
         {
-          "source": "vendor/shuohao/snapshot-manifest.json",
-          "target": "vendor/shuohao/snapshot-manifest.json"
+          "source": "vendor/kernels/snapshot-manifest.json",
+          "target": "vendor/kernels/snapshot-manifest.json"
         },
         {
-          "source": "vendor/shuohao/upstream/LICENSE",
+          "source": "vendor/kernels/upstream/LICENSE",
           "target": "THIRD_PARTY_LICENSES/shuohao-LICENSE"
         },
         {
-          "source": "vendor/shuohao/upstream/NOTICE",
+          "source": "vendor/kernels/upstream/NOTICE",
           "target": "THIRD_PARTY_NOTICES/shuohao-NOTICE"
         },
         {
-          "source": "engine/shuohao-adapted/MODIFICATIONS.md",
+          "source": "engine/kernels/MODIFICATIONS.md",
           "target": "THIRD_PARTY_NOTICES/shuohao-MODIFICATIONS.md"
         }
       ]
@@ -585,31 +585,31 @@
       ],
       "vendor_files": [
         {
-          "source": "engine/shuohao-runtime",
-          "target": "engine/shuohao-runtime"
+          "source": "engine/runtime",
+          "target": "engine/runtime"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-script/SKILL.md",
-          "target": "references/shuohao/workflow.md"
+          "source": "engine/kernels/skills/novel-script/SKILL.md",
+          "target": "references/kernel/workflow.md"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-script/references",
-          "target": "references/shuohao/references"
+          "source": "engine/kernels/skills/novel-script/references",
+          "target": "references/kernel/references"
         },
         {
-          "source": "vendor/shuohao/snapshot-manifest.json",
-          "target": "vendor/shuohao/snapshot-manifest.json"
+          "source": "vendor/kernels/snapshot-manifest.json",
+          "target": "vendor/kernels/snapshot-manifest.json"
         },
         {
-          "source": "vendor/shuohao/upstream/LICENSE",
+          "source": "vendor/kernels/upstream/LICENSE",
           "target": "THIRD_PARTY_LICENSES/shuohao-LICENSE"
         },
         {
-          "source": "vendor/shuohao/upstream/NOTICE",
+          "source": "vendor/kernels/upstream/NOTICE",
           "target": "THIRD_PARTY_NOTICES/shuohao-NOTICE"
         },
         {
-          "source": "engine/shuohao-adapted/MODIFICATIONS.md",
+          "source": "engine/kernels/MODIFICATIONS.md",
           "target": "THIRD_PARTY_NOTICES/shuohao-MODIFICATIONS.md"
         }
       ]
@@ -648,39 +648,39 @@
       ],
       "vendor_files": [
         {
-          "source": "engine/shuohao-runtime",
-          "target": "engine/shuohao-runtime"
+          "source": "engine/runtime",
+          "target": "engine/runtime"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-storyboard/SKILL.md",
-          "target": "references/shuohao/workflow.md"
+          "source": "engine/kernels/skills/novel-storyboard/SKILL.md",
+          "target": "references/kernel/workflow.md"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-storyboard/references",
-          "target": "references/shuohao/references"
+          "source": "engine/kernels/skills/novel-storyboard/references",
+          "target": "references/kernel/references"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-storyboard/README.md",
-          "target": "references/shuohao/README.md"
+          "source": "engine/kernels/skills/novel-storyboard/README.md",
+          "target": "references/kernel/README.md"
         },
         {
-          "source": "engine/shuohao-adapted/skills/novel-storyboard/README.en.md",
-          "target": "references/shuohao/README.en.md"
+          "source": "engine/kernels/skills/novel-storyboard/README.en.md",
+          "target": "references/kernel/README.en.md"
         },
         {
-          "source": "vendor/shuohao/snapshot-manifest.json",
-          "target": "vendor/shuohao/snapshot-manifest.json"
+          "source": "vendor/kernels/snapshot-manifest.json",
+          "target": "vendor/kernels/snapshot-manifest.json"
         },
         {
-          "source": "vendor/shuohao/upstream/LICENSE",
+          "source": "vendor/kernels/upstream/LICENSE",
           "target": "THIRD_PARTY_LICENSES/shuohao-LICENSE"
         },
         {
-          "source": "vendor/shuohao/upstream/NOTICE",
+          "source": "vendor/kernels/upstream/NOTICE",
           "target": "THIRD_PARTY_NOTICES/shuohao-NOTICE"
         },
         {
-          "source": "engine/shuohao-adapted/MODIFICATIONS.md",
+          "source": "engine/kernels/MODIFICATIONS.md",
           "target": "THIRD_PARTY_NOTICES/shuohao-MODIFICATIONS.md"
         }
       ]

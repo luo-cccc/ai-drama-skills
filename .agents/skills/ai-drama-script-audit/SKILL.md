@@ -46,5 +46,6 @@ description: 对故事大纲、分场和影视剧本执行证据驱动的开放�
 - `references/evidence-audit.md`
 - `references/workflow-contract.md`
 - `references/screenplay-format.md`
+- `references/episode-drama-contract.md`
 - `schemas/prompt-context.schema.json`
 - `schemas/audit-report.schema.json`
