@@ -29,7 +29,7 @@ Use `CHAR-001`, `SCENE-001`, `PROP-001`, `MOTIF-001`, `COSTUME-001`, and `BG-001
 
 A locked manifest is registered as artifact type `locked-assets`, canonical path `asset-manifest.json`, with its exact SHA-256 and exact confirmed screenplay/audit dependencies. Any later manifest change invalidates that confirmation until a new locked-assets artifact is authorized.
 
-Prompts and preview images are not evidence. A DNA brief is Tier 1 planning. Generated visual media requires a separate `visual-delivery` with capability evidence, hashes, dimensions, and QC; project delivery requires the applicable `delivery-manifest` tier.
+Prompts and preview images are not evidence. A DNA brief is planning-stage material, not delivered media. Generated visual media requires a separate `visual-delivery` with capability evidence, hashes, dimensions, and QC; project delivery requires the applicable delivery state in `delivery-contract.md`.
 
 ## Human Projection
 

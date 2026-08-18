@@ -24,7 +24,7 @@
     "ai-drama-assets/references/asset-extraction.md": "38580bba2562568d5d948d3556f541c34f31de5dc263f29a5a464f01b5ae00a8",
     "ai-drama-assets/references/data-contract.md": "00226876de8263e3f116875e0304f7bd34d8da0335e4efc9a47c6be5278012e5",
     "ai-drama-assets/references/delivery-contract.md": "59044d506b490ffd260fa6a42942a8bcbe18f3ff1a5a6c9139586d64997ce08d",
-    "ai-drama-assets/references/manifest-contract.md": "80e88280c48ec2c9f9b7e11c5aa1a7a02d8bd95bf1ff03e08db202dea07c4208",
+    "ai-drama-assets/references/manifest-contract.md": "f8b47dcccce3fe894581b170354c12552dce1353930b61d1de57bb7601eaee68",
     "ai-drama-assets/references/visual-evidence.md": "9e99d0b0729880d1311bee89580a56032d9d50d16620e0a65d899dffc5b8f6bb",
     "ai-drama-assets/schemas/asset-manifest.schema.json": "d42373d09e0aaa2c9c2142bba987fb6ae1343b7e1604d13f061915a807bc3dbe",
     "ai-drama-assets/schemas/audit-report.schema.json": "a60f90d4e62ababd15f580b0c87474e534018a1edf9634486bb94c85f7863a7c",
@@ -245,7 +245,7 @@
     "ai-drama-short-drama/scripts/state_cli.py": "7aa2a22fc7db557594e91690b955548d664dd4c992454c54ad98b30e1d05fc75",
     "ai-drama-short-drama/scripts/timeline_cli.py": "4e041d7a6f6876dc51cecea8744b1c3997d2c5666248292c32c890c4371f8ba1",
     "ai-drama-short-drama/scripts/validate_project.py": "4114a4074abce3ff79775842c704a80fa433b57572f86bab62b58f588aafeac1",
-    "ai-drama-short-drama/SKILL.md": "7051c4b2a3add771a409f76634eb0bb7956410bac8a31a24a21afcb8edfc74de",
+    "ai-drama-short-drama/SKILL.md": "c0d773aca72f18b381bfc87d8ed700d64b60fd9a38d6c85546d53bd5324b447e",
     "ai-drama-short-drama/THIRD_PARTY_LICENSES/shuohao-LICENSE": "b1d2870f1a00e4d7f56576e5f0870cba109e041f8af66866cf5b499478e654e7",
     "ai-drama-short-drama/THIRD_PARTY_NOTICES/shuohao-MODIFICATIONS.md": "f740ede24f3a8c21a2e00e44fc6cdac8248d0dcd15994127bfe8ab5fc52f89e1",
     "ai-drama-short-drama/THIRD_PARTY_NOTICES/shuohao-NOTICE": "4a439a29366f485f5ef493a804a4c77a23b41d31eaf97eb66b921e5484bc597d",
@@ -453,7 +453,7 @@
     "ai-drama-short-drama-storyboard/scripts/short_drama_cli.py": "4103353a342fb7da4c61e1ef8d0670c40eeba363241b781ea7c0f008d28d96a4",
     "ai-drama-short-drama-storyboard/scripts/timeline_cli.py": "4e041d7a6f6876dc51cecea8744b1c3997d2c5666248292c32c890c4371f8ba1",
     "ai-drama-short-drama-storyboard/scripts/validate_project.py": "4114a4074abce3ff79775842c704a80fa433b57572f86bab62b58f588aafeac1",
-    "ai-drama-short-drama-storyboard/SKILL.md": "636786ba7b1a5d166d90491ff6d901ebd387b42125442b00ddd0da5a686dde51",
+    "ai-drama-short-drama-storyboard/SKILL.md": "7cffee9d0b247d3eb2efa039b82fb008cd13082b1ff7a08115addd78082e6bfc",
     "ai-drama-short-drama-storyboard/THIRD_PARTY_LICENSES/shuohao-LICENSE": "b1d2870f1a00e4d7f56576e5f0870cba109e041f8af66866cf5b499478e654e7",
     "ai-drama-short-drama-storyboard/THIRD_PARTY_NOTICES/shuohao-MODIFICATIONS.md": "f740ede24f3a8c21a2e00e44fc6cdac8248d0dcd15994127bfe8ab5fc52f89e1",
     "ai-drama-short-drama-storyboard/THIRD_PARTY_NOTICES/shuohao-NOTICE": "4a439a29366f485f5ef493a804a4c77a23b41d31eaf97eb66b921e5484bc597d",
@@ -507,6 +507,6 @@
     "ai-drama-storyboard/scripts/timeline_cli.py": "4e041d7a6f6876dc51cecea8744b1c3997d2c5666248292c32c890c4371f8ba1",
     "ai-drama-storyboard/scripts/validate_project.py": "4114a4074abce3ff79775842c704a80fa433b57572f86bab62b58f588aafeac1",
     "ai-drama-storyboard/scripts/visual_layout_cli.py": "b3a57c46fcf1bb1820c0ac6008286993e5f2e800819a63096102dbe662ac34f5",
-    "ai-drama-storyboard/SKILL.md": "e97fdb4bc21bd06473183e994441c8da859667a70d5d2913350dedef1b90ede3"
+    "ai-drama-storyboard/SKILL.md": "5678696c58c9f3733b1b84d9acab8a9121f60e185dab581835115ecba27d2380"
   }
 }

@@ -28,9 +28,9 @@ description: 将已确认剧本、场景或故事节拍转换为关键分镜、�
 ## Outputs
 
 - Canonical versioned `shot-plan` JSON；Markdown、表格、九宫格和 prompts 从它派生。
-- Tier 1：validated canonical plan 与 `prompt-only` 派生物。
-- Tier 2：与 shot plan 对账的 generation manifest 和 prompt 文件；可附已生成但未完成最终 QC 的 media。
-- Tier 3：实际 media 已进入 visual/delivery manifest，哈希、尺寸/时长和所需 QC 全部通过。
+- Validated canonical plan 与 `prompt-only` 派生物；产物不锁定。
+- 与 shot plan 对账的 generation manifest 和 prompt 文件；可附已生成但未完成最终 QC 的 media。
+- 实际 media 进入 visual/delivery manifest、哈希/尺寸/时长和所需 QC 全部通过后，项目才达到对应的交付状态；交付状态是项目级标签，见 `delivery-contract.md`。
 
 ## Gates
 
@@ -39,7 +39,7 @@ description: 将已确认剧本、场景或故事节拍转换为关键分镜、�
 - 默认最大生成片段为 `30000 ms`，除非 profile 明确覆盖；无合法边界时报告冲突，不截断节拍。
 - Generation manifest 必须与 shot groups、prompt hashes 和 absolute timing 精确一致。
 - 系列聚合保存 immutable versioned snapshot；root `shot-plan.json` 仅为同字节 projection，不得单独编辑。
-- 图像能力不可用时交付 `prompt-only`；实际 raster 必须逐张打开、验证画幅/非空并完成视觉复核后才能进入 Tier 3。
+- 图像能力不可用时交付 `prompt-only`；实际 raster 必须逐张打开、验证画幅/非空并完成视觉复核后才能计入 media delivered 交付状态。
 
 ## Shared Links
 

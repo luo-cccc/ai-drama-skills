@@ -52,10 +52,10 @@ Schema keyword lint 也对 `schemas/*.json` 全部执行。dist 构建到两个�
 
 ## Identities
 
-- `vendor/shuohao/snapshot-manifest.json` SHA-256: `88dd4e58d7d30a32eba6f62c7a766db42394445e097f8f48952cca37d42e31dd`
-- `.agents/skills/package-manifest.json` SHA-256: `217795ec4b9a6e08b94d6cdaa91b58a65016438969a91fcf02bfc95e2e17178c`
+- `vendor/kernels/snapshot-manifest.json` SHA-256: `68f5c6aa7a48ba88b9d02559038909cef946edc5d1116e5f02cbe6ef531a7418`
+- `.agents/skills/package-manifest.json` SHA-256: `0383aa39f8d53a4cdc93a31e5f7b9ce93d884ae940b1245bbe8d2a3a7cbfee6e`
 
-The package manifest includes the shared delivery contract and, for every Skill carrying shuohao runtime material, upstream LICENSE, upstream NOTICE and the Forging modification addendum.
+The package manifest includes the shared delivery contract and, for every Skill carrying kernel runtime material, upstream LICENSE, upstream NOTICE and the Forging modification addendum.
 
 ## Evidence Boundary
 

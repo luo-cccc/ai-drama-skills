@@ -28,7 +28,7 @@ Run the adapted H3 storyboard kernel inside Forging governance and import its en
 - Versioned governed storyboard JSON and derived Markdown/HTML reports.
 - Versioned scoped `shot-plan` JSON as canonical timing and asset truth.
 - H3 `prompt.md` files and canonical `generation-manifest` JSON binding prompt hashes, shots, beats, assets, groups, and absolute ranges.
-- Tier 1 after validated canonical plan import; Tier 2 after the generation manifest and prompt files reconcile; Tier 3 only after separately delivered media passes manifest-backed QC.
+- Validated canonical plan import; generation manifest and prompt files reconcile to the plan; media delivery states are project-level labels in `delivery-contract.md`, reached only after separately delivered media passes manifest-backed QC.
 
 ## Gates
 

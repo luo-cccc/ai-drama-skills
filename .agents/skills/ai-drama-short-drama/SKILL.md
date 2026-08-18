@@ -31,7 +31,7 @@ Govern the complete short-drama series. Forging owns project state, evidence, ID
 - Canonical cast, outline, screenplay, audit, storyboard, asset, scoped shot-plan, generation-manifest, and delivery-manifest artifacts.
 - Immutable `hook-ledger` / `canon` governance snapshots plus `canon-register` inputs and byte-identical root projections, all bound in `short-drama-engine.canonical_state`.
 - A versioned immutable series shot-plan snapshot plus root `shot-plan.json` as its exact projection.
-- Tier 1 canonical plans, Tier 2 generation packages, and Tier 3 verified media according to the actual requested delivery.
+- Canonical plans, generation packages, and verified media according to the actual requested delivery; delivery states are project-level labels in `delivery-contract.md`.
 
 ## Gates
 
